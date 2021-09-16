@@ -1,4 +1,0 @@
-useDynLib(ufos, .registration = TRUE, .fixes = "")
-export(is_ufo)
-#exportPattern("^[[:alpha:]]+")
-#export(ufo_shutdown)
