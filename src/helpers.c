@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "../include/ufos.h"
+#include "../include/ufo_r/src/ufos.h"
 
 int __extract_int_or_die(SEXP/*INTSXP*/ sexp) {
     if (TYPEOF(sexp) != INTSXP) {

@@ -589,7 +589,7 @@ SEXP logical_subscript(SEXP vector, SEXP subscript, int32_t min_load_count) {
 
 	R_xlen_t vector_length    = XLENGTH(vector);
 	R_xlen_t subscript_length = XLENGTH(subscript);
-	SEXPTYPE vector_type      = TYPEOF(vector);
+	//SEXPTYPE vector_type      = TYPEOF(vector);
 
 	if (subscript_length == 0) {
 		return allocVector(INTSXP, 0);
@@ -1279,7 +1279,7 @@ SEXP write_values_into_vector_at_integer_indices(SEXP target, SEXP indices_into_
 	// 		  "values from one into the other.");
 	// XXX Does coercion now
 
-	make_sure(TYPEOF(indices_into_target) == INTSXP, Rf_error, 
+	make_sure(TYPEOF(indices_into_target) == INTSXP, //Rf_error, 
 	 		  "Index vector was expected to be of type INTSXP, but found %i.",
 	 		  type2char(TYPEOF(indices_into_target)));
 
@@ -1383,7 +1383,7 @@ SEXP write_values_into_vector_at_real_indices(SEXP target, SEXP indices_into_tar
 			  "the index vector when copying selected values "
 			  "into a vector.");
 
-	make_sure(index_length % source_length == 0, Rf_error, 
+	make_sure(index_length % source_length == 0, //Rf_error, 
 			  "The source vector's size must be a multiple of "
 			  "the index vector when copying selected values "
 			  "into a vector.");

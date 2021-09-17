@@ -44,7 +44,7 @@
 //--------------------------------------------------------------------------------
 
 inline static void ensure_type(SEXP sexp, SEXPTYPE expected_type) {
-	(TYPEOF(sexp) == expected_type, Rf_error,
+	make_sure(TYPEOF(sexp) == expected_type, 
 			"expected %s but found %s",
 			type2char(expected_type),
 			type2char(TYPEOF(sexp)));
