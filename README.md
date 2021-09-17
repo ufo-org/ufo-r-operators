@@ -128,7 +128,7 @@ The user has insufficient privileges to execute a userfaultfd system call.
 
 One likely culprit is that a global sysctl knob "vm.unprivileged_userfaultfd" to
 control whether userfaultfd is allowed by unprivileged users was added to kernel
-settings. If `/proc/sys/vm/unprivileged_userfaultfd` is 0, do:
+settings. If `/proc/sys/vm/unprivileged_userfaultfd` is `0`, do:
 
 ```
 sysctl -w vm.unprivileged_userfaultfd=1
