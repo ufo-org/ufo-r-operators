@@ -7,6 +7,8 @@ else
 	PKG_CFLAGS = -DUSE_R_STUFF -DSAFETY_FIRST -O2       -Wall -Werror -Iinclude
 endif
 
+# TODO remove SAFETY_FIRST unless debug
+
 SOURCES_C = init.c  \
             ufo_empty.c \
             ufo_seq.c \
