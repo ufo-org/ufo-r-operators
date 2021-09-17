@@ -56,8 +56,8 @@ Check if your operating system restricts who can call `userfaultfd`:
 cat /proc/sys/vm/unprivileged_userfaultfd
 ```
 
-*0* means only privileged users can call `userfaultfd` and UFOs will only work for privileged users. 
-To allow unprivileged users to call `userfaultfd`:
+*0* means only privileged users can call `userfaultfd` and UFOs will only work
+for privileged users. To allow unprivileged users to call `userfaultfd`:
 
 ```bash
 sysctl -w vm.unprivileged_userfaultfd=1
@@ -98,10 +98,19 @@ Install the package with R. This compiles and properly install the package.
 R CMD INSTALL --preclean .
 ```
 
-You can also build the project with debug symbols by setting (exporting) the `UFO_DEBUG` environmental variable to `1`.
+You can also build the project with debug symbols by setting (exporting) the
+`UFO_DEBUG` environmental variable to `1`.
 
 ```
 UFO_DEBUG=1 R CMD INSTALL --preclean .
+```
+
+## Testing
+
+Check the package and display all errors:
+
+```bash
+_R_CHECK_TESTS_NLINES_=0 R CMD check .
 ```
 
 ## Troubleshooting
@@ -117,9 +126,9 @@ Error: package or namespace load failed for ‘ufos’:
 
 The user has insufficient privileges to execute a userfaultfd system call. 
 
-One likely culprit is that a global sysctl knob "vm.unprivileged_userfaultfd" to control
-whether userfaultfd is allowed by unprivileged users was added to kernel settings. 
-If `/proc/sys/vm/unprivileged_userfaultfd` is 0, do:
+One likely culprit is that a global sysctl knob "vm.unprivileged_userfaultfd" to
+control whether userfaultfd is allowed by unprivileged users was added to kernel
+settings. If `/proc/sys/vm/unprivileged_userfaultfd` is 0, do:
 
 ```
 sysctl -w vm.unprivileged_userfaultfd=1
