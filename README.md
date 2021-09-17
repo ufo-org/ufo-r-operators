@@ -101,7 +101,7 @@ R CMD INSTALL --preclean .
 You can also build the project with debug symbols by setting (exporting) the
 `UFO_DEBUG` environmental variable to `1`.
 
-```
+```bash
 UFO_DEBUG=1 R CMD INSTALL --preclean .
 ```
 
@@ -126,10 +126,10 @@ Error: package or namespace load failed for ‘ufos’:
 
 The user has insufficient privileges to execute a userfaultfd system call. 
 
-One likely culprit is that a global sysctl knob "vm.unprivileged_userfaultfd" to
+One likely culprit is that a global `sysctl` knob `vm.unprivileged_userfaultfd` to
 control whether userfaultfd is allowed by unprivileged users was added to kernel
 settings. If `/proc/sys/vm/unprivileged_userfaultfd` is `0`, do:
 
-```
+```bash
 sysctl -w vm.unprivileged_userfaultfd=1
 ```
