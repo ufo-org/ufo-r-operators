@@ -1,6 +1,9 @@
 # UFO R Vectors
 
-UFO R vectors are lazily generated, larger-than-memory vectors for R. 
+This package contains a collection of example implementations of lazily
+generated, larger-than-memory vectors for R using the the [R
+API](https://github.com/ufo-org/ufo-r) of the [UFO
+framework](https://github.com/ufo-org/ufo-core).
 
 UFO R vectors are implemented with the Userfault Object (UFO) framework. These
 vectors are indistinguishable from plain old R vectors and can be used with
@@ -81,7 +84,7 @@ devtools::install_github("ufo-org/viewports")
 Before building, retrievew the code of a submodule:
 
 ```bash
-git submodule update --init
+git submodule update --init --recursive
 ```
 
 To update the submodule, pull it.
