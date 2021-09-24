@@ -91,7 +91,7 @@ To update the submodule, pull it.
 
 ```bash
 cd includes/ufo_r
-git pull
+git pull origin main
 cd ../..
 ```
 
