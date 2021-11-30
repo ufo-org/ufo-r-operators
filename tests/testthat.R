@@ -1,4 +1,6 @@
 library(testthat)
 library(ufovectors)
 
-test_check("ufovectors")
+options(warn=1)
+
+test_check("ufovectors", reporter = SummaryReporter$new() )

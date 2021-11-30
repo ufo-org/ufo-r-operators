@@ -1,20 +1,22 @@
 *
+
+!*/
+
 !.gitignore
 !.gitmodules
 
 !.vscode/*.json
-!R/*.{R.r}
+!*.{R.r}
+!data/*.{sh,c}
 !benchmark/*
-!data/*
 !src/Makevars
 !src/*.{c,h}
 !src/bin/*.{c,h}
 !src/csv/*.{c,h}
 !src/evil/*.{c,h}
-!tests/*
 !vignettes/*
 !DESCRIPTION
 !NAMESPACE
 !README.md
 
-
+..Rcheck
