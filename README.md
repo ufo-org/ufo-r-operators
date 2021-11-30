@@ -90,9 +90,7 @@ git submodule update --init --recursive
 To update the submodule, pull it.
 
 ```bash
-cd includes/ufo_r
-git pull
-cd ../..
+cd include/ufo_r && git pull origin main && cd ../..
 ```
 
 Install the package with R. This compiles and properly install the package.
