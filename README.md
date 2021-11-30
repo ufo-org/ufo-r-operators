@@ -1,7 +1,7 @@
 # UFO R Vectors
 
 This package contains a collection of example implementations of lazily
-generated, larger-than-memory vectors for R using the the [R
+generated, larger-than-memory vectors for R using the [R
 API](https://github.com/ufo-org/ufo-r) of the [UFO
 framework](https://github.com/ufo-org/ufo-core).
 
@@ -116,6 +116,8 @@ _R_CHECK_TESTS_NLINES_=0 R CMD check .
 
 ## Troubleshooting
 
+### Operation not permitted
+
 ```
 syscall/userfaultfd: Operation not permitted
 error initializing User-Fault file descriptor: Invalid argument
@@ -133,4 +135,31 @@ settings. If `/proc/sys/vm/unprivileged_userfaultfd` is `0`, do:
 
 ```bash
 sysctl -w vm.unprivileged_userfaultfd=1
+```
+
+### Div_floor
+
+```
+error[E0599]: no method named `div_floor` found for type `usize` in the current scope
+   --> /home/kondziu/.cargo/git/checkouts/ufo-core-6fe53746510c8ee1/853284b/src/ufo_objects.rs:193:47
+    |
+193 |         let chunk_number = offset_from_header.div_floor(bytes_loaded_at_once);
+    |                                               ^^^^^^^^^ method not found in `usize`
+    |
+   ::: /home/kondziu/.cargo/registry/src/github.com-1ecc6299db9ec823/num-integer-0.1.44/src/lib.rs:54:8
+    |
+54  |     fn div_floor(&self, other: &Self) -> Self;
+    |        --------- the method is available for `usize` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+    |
+1   | use num::Integer;
+    |
+```
+
+You are using an older version of the Rust compiler. Consider upgrading:
+
+```
+rustup upgrade
 ```
