@@ -21,6 +21,10 @@
 
 #include "ufo_bz2.h"
 #include "bzip2/blocks.h"
+#include "bzip2/block.h"
+
+// TODO The buffer should probably be handled by R?
+#define DECOMPRESSED_BUFFER_SIZE 1024 * 1024 * 1024 // 900kB + some room just in case
 
 // #include <bzlib.h>
 
@@ -47,7 +51,7 @@ static int32_t BZip2_populate_bytes(void* user_data, uintptr_t start, uintptr_t 
                 block_index, start, blocks->decompressed_start_offset[block_index]);
             break;
         }
-        LOG("UFO skips block %li: start=%li <= decompressed_offset=%li \n", 
+        REprintf("UFO skips block %li: start=%li <= decompressed_offset=%li \n", 
             block_index, start, blocks->decompressed_start_offset[block_index]);
     }
 
@@ -162,18 +166,26 @@ static int32_t BZip2_populate_bytes(void* user_data, uintptr_t start, uintptr_t 
     return 0;
 }
 
+void BZip2_ufo_free(void* data) {
+    // Free the blocks struct
+    Blocks *blocks = (Blocks *) data;
+    Blocks_free(blocks);
+
+    // Everything else is handled by UFO-R.
+}
+
 /*ufo_vector_type_t result_type, */
 SEXP ufo_bz2_raw(SEXP/*STRSXPXP*/ filename, SEXP/*LGLSXP*/ read_only, SEXP/*INTSXP*/ min_load_count) {
 
     // Read the arguements into practical types (with checks).
     bool read_only_value = __extract_boolean_or_die(read_only);
     int min_load_count_value = __extract_int_or_die(min_load_count);
-    const char *path = __extract_path_or_die(filename);
+    const char *path = __extract_path_or_die(filename);    
 
     // Pre-scan the file
-    Blocks *blocks = Blocks_new(filename);
+    Blocks *blocks = Blocks_new(path);
 
-        // Check for bad blocks
+    // Check for bad blocks
     if (blocks->bad_blocks > 0) {
         Blocks_free(blocks);
         Rf_error("UFO some blocks could not be read. Quitting.\n");
@@ -185,13 +197,13 @@ SEXP ufo_bz2_raw(SEXP/*STRSXPXP*/ filename, SEXP/*LGLSXP*/ read_only, SEXP/*INTS
 
     // Element size and count metadata
     source->vector_type = UFO_RAW;
-    source->element_size = __get_element_size(result_type);
+    source->element_size = __get_element_size(UFO_RAW);
     source->vector_size = blocks->decompressed_size;
 
     // Behavior specification
     source->data = (void*) blocks;
     source->destructor_function = BZip2_ufo_free; //&destroy_data;
-    source->population_function = BZip2_populate;
+    source->population_function = BZip2_populate_bytes;
     
     // Chunk-related parameters
     source->read_only = read_only_value;
@@ -203,12 +215,4 @@ SEXP ufo_bz2_raw(SEXP/*STRSXPXP*/ filename, SEXP/*LGLSXP*/ read_only, SEXP/*INTS
 
     ufo_new_t ufo_new = (ufo_new_t) R_GetCCallable("ufos", "ufo_new");
     return ufo_new(source);
-}
-
-void BZip2_ufo_free(void* data) {
-    // Free the blocks struct
-    Blocks *blocks = (Blocks *) data;
-    Blocks_free(blocks);
-
-    // Everything else is handled by UFO-R.
 }

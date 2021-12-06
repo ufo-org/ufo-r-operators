@@ -1,6 +1,5 @@
 #include "bz2_utils.h"
 
-
 bz_stream *bz_stream_new() {
     bz_stream *stream = (bz_stream *) malloc(sizeof(bz_stream));
     if (stream == NULL) {

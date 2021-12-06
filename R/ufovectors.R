@@ -296,3 +296,32 @@ ufo_character <- function(size, populate_with_NAs = FALSE, min_load_count = 0, a
 ufo_store_bin <- function(path, vector) {
    invisible(.Call(UFO_C_store_bin, .check_path(.expect_exactly_one(path)), vector))
 }
+
+
+# ufo_integer_seq   <- function(from, to, by, read_only, min_load_count, ...)
+# ufo_numeric_seq   <- function(from, to, by, read_only, min_load_count, ...)
+
+# ufo_integer_bin   <- function(path, read_only, min_load_count, ...)
+# ufo_numeric_bin   <- function(path, read_only, min_load_count, ...)
+# ufo_complex_bin   <- function(path, read_only, min_load_count, ...)
+# ufo_logical_bin   <- function(path, read_only, min_load_count, ...)
+# ufo_raw_bin       <- function(path, read_only, min_load_count, ...)    
+
+# ufo_integer       <- function(size, populate_with_NAs, min_load_count, ...)
+# ufo_numeric       <- function(size, populate_with_NAs, min_load_count, ...)
+# ufo_complex       <- function(size, populate_with_NAs, min_load_count, ...)
+# ufo_logical       <- function(size, populate_with_NAs, min_load_count, ...)
+# ufo_raw           <- function(size,                    min_load_count, ...)
+# ufo_character     <- function(size, populate_with_NAs, min_load_count, ...)
+
+# ufo_integer_bz2   <- function(path, read_only, min_load_count, ...)
+# ufo_numeric_bz2   <- function(path, read_only, min_load_count, ...)
+# ufo_complex_bz2   <- function(path, read_only, min_load_count, ...)
+# ufo_logical_bz2   <- function(path, read_only, min_load_count, ...)
+# ufo_raw_bz2       <- function(path  read_only, min_load_count, ...)
+# ufo_character_bz2 <- function(path, read_only, min_load_count, ...)
+
+# ufo_bind          <- function(..., read_only, min_load_count)
+# ufo_write_protect <- function(vector, read_only, min_load_count, ...)
+# ufo_psql          <- function(db, table, column, read_only, min_load_count, ...)
+# ufo_csv           <- function(path, read_only, min_load_count, check_names, header, ...)

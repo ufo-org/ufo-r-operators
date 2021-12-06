@@ -1,5 +1,5 @@
 #include "blocks.h"
-
+#include "block.h"
 #include "bitstream.h"
 
 Blocks *Blocks_parse(const char *input_file_path) {
@@ -7,7 +7,7 @@ Blocks *Blocks_parse(const char *input_file_path) {
     // Open file for reading.
     FileBitStream *input_stream = FileBitStream_new(input_file_path);
     if (input_stream == NULL) {
-        REPORT("Cannot open file %s.\n", input_file_path);  
+        REerror("Cannot open file %s.\n", input_file_path);  
         return NULL;
     }
 
@@ -18,7 +18,7 @@ Blocks *Blocks_parse(const char *input_file_path) {
     // Initialize the counters.
     Blocks *boundaries = (Blocks *) malloc(sizeof(Blocks));    
     if (NULL == boundaries) {
-        REPORT("Cannot allocate a struct for recording block boundaries.\n");  
+        UFO_REPORT("Cannot allocate a struct for recording block boundaries.\n");  
         return NULL;
     }
 
@@ -38,7 +38,7 @@ Blocks *Blocks_parse(const char *input_file_path) {
         // much.
         if (bit < 0) {
             // If we're inside a block (not at the beginning or within an end
-            // marker) we report an error and stop processing the block.
+            // marker) we UFO_REPORT an error and stop processing the block.
             if (input_stream->read_bits >= start_offset[blocks] && 
                (input_stream->read_bits - start_offset[blocks]) >= 40) {
                 end_offset[blocks] = input_stream->read_bits - 1;
@@ -92,7 +92,7 @@ Blocks *Blocks_parse(const char *input_file_path) {
 
             // Too many blocks
             if (blocks >= MAX_BLOCKS) {
-                REPORT("analyzer can handle up to %i blocks, "
+                UFO_REPORT("analyzer can handle up to %i blocks, "
                                 "but more blocks were found in file %s\n",
                                 MAX_BLOCKS, input_stream->path);
                 free(boundaries);
@@ -116,7 +116,7 @@ void Blocks_free(Blocks *blocks) {
     free(blocks);
 }
 
-Blocks *Blocks_new(char *filename) {
+Blocks *Blocks_new(const char *filename) {
     // Parse the file.
     Blocks *blocks = Blocks_parse(filename);
 
@@ -130,7 +130,7 @@ Blocks *Blocks_new(char *filename) {
     for (size_t i = 0; i < blocks->blocks; i++) {
 
         // Extract a single compressed block.
-        __block = i;
+        // __block = i;
         Block *block = Block_from(blocks, i);        
         int output_buffer_occupancy = Block_decompress(block, output_buffer_size, output_buffer);
         LOG("Finished decompressing block %li, found %i elements\n", i, output_buffer_occupancy);   
@@ -139,7 +139,7 @@ Blocks *Blocks_new(char *filename) {
         Block_free(block);
 
         if (output_buffer_occupancy < 0) {
-            REPORT("Failed to decompress block %li, stopping\n", i);
+            UFO_REPORT("Failed to decompress block %li, stopping\n", i);
             break;
         }
 

@@ -12,6 +12,7 @@ endif
 SOURCES_C = init.c  \
             ufo_empty.c \
             ufo_seq.c \
+            ufo_bz2.c bzip2/bitbuffer.c bzip2/bitstream.c bzip2/block.c bzip2/blocks.c bzip2/bz2_utils.c bzip2/shift.c bzip2/bzip2.c \
             ufo_csv.c csv/string_vector.c csv/string_set.c csv/token.c csv/tokenizer.c csv/reader.c  \
             ufo_vectors.c bin/io.c \
             ufo_operators.c ufo_coerce.c \

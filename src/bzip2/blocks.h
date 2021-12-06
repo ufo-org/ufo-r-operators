@@ -22,6 +22,6 @@ typedef struct {
 } Blocks;
 
 Blocks *Blocks_parse(const char *input_file_path);
-Blocks *Blocks_new(char *filename);
+Blocks *Blocks_new(const char *filename);
 void Blocks_free(Blocks *blocks);
 

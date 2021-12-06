@@ -1,10 +1,14 @@
+#include "../debug.h"
+#include "../safety_first.h"
+
 #include "bitbuffer.h"
+#include <string.h>
 
 BitBuffer *BitBuffer_new(size_t max_bytes) {
     BitBuffer *buffer = malloc(sizeof(BitBuffer));
 
     if (buffer == NULL) {
-        REPORT("Cannot allocate BitBuffer.");
+        UFO_REPORT("Cannot allocate BitBuffer.");
         return NULL;
     }
 
@@ -14,8 +18,8 @@ BitBuffer *BitBuffer_new(size_t max_bytes) {
     buffer->max_bytes = max_bytes;
 
     if (buffer->data == NULL) {
-        REPORT("Cannot allocate internal buffer in BitBuffer.");
         free(buffer);
+        UFO_REPORT("Cannot allocate internal buffer in BitBuffer.");
         return NULL;
     }
 
@@ -31,9 +35,9 @@ void BitBuffer_free(BitBuffer *buffer) {
 }
 
 int BitBuffer_append_bit(BitBuffer* buffer, unsigned char bit) {
-    assert(buffer->current_bit < 8);
+    make_sure(buffer->current_bit < 8, "Bit out of range");
     if (buffer->data == NULL) {
-        REPORT("BitBuffer has uninitialized data.\n");
+        UFO_REPORT("BitBuffer has uninitialized data.\n");
         return -2;
     }
 
@@ -44,7 +48,7 @@ int BitBuffer_append_bit(BitBuffer* buffer, unsigned char bit) {
     if (buffer->current_bit == 7) {
         buffer->current_byte += 1;
         if (buffer->current_bit >= buffer->max_bytes) {
-            REPORT("ERROR: BitBuffer overflow.\n");
+            UFO_REPORT("ERROR: BitBuffer overflow.\n");
             return -1;
         }
     }

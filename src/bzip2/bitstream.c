@@ -4,7 +4,7 @@ FileBitStream *FileBitStream_new(const char *input_file_path) {
     // Allocate bit stream for reading
     FileBitStream *input_stream = (FileBitStream *) malloc(sizeof(FileBitStream));
     if (input_stream == NULL) {
-        REPORT("Cannot allocate FileBitStream object.\n");  
+        UFO_REPORT("Cannot allocate FileBitStream object.\n");  
         return NULL;
     }
 
@@ -20,7 +20,7 @@ FileBitStream *FileBitStream_new(const char *input_file_path) {
     // Open the input bzip2 file
     FILE* input_file = fopen(input_file_path, "rb");
     if (input_file == NULL) {
-        REPORT("Cannot read file at %s.\n", input_file_path);
+        UFO_REPORT("Cannot read file at %s.\n", input_file_path);
         free(input_stream);
         return NULL;
     }
@@ -54,7 +54,7 @@ int FileBitStream_read_bit(FileBitStream *input_stream) {
         // Detect error
         if (ferror(input_stream->handle)) {
             perror("ERROR");
-            REPORT("Cannot read bit from file at %s.\n", 
+            UFO_REPORT("Cannot read bit from file at %s.\n", 
                     input_stream->path);         
             return -2;
         }
@@ -97,7 +97,7 @@ int FileBitStream_seek_bit(FileBitStream *input_stream, uint64_t bit_offset) {
     // Don't feel like solving the case for < 64, we never use it, since the
     // first block will start around 80b.
     if (bit_offset < (sizeof(uint32_t) * 2)) {
-        REPORT("Seeking to bit offset < 64b is not allowed.\n");
+        UFO_REPORT("Seeking to bit offset < 64b is not allowed.\n");
     }
 
     // Maff
@@ -113,7 +113,7 @@ int FileBitStream_seek_bit(FileBitStream *input_stream, uint64_t bit_offset) {
     int seek_result = fseek(input_stream->handle, byte_offset_without_buffer, SEEK_SET);
     if (seek_result < -1) {
         perror("ERROR");
-        REPORT("Seek failed in %s\n", input_stream->path);
+        UFO_REPORT("Seek failed in %s\n", input_stream->path);
         return seek_result;
     }
 
@@ -121,13 +121,13 @@ int FileBitStream_seek_bit(FileBitStream *input_stream, uint64_t bit_offset) {
     // `byte offset` afterwards.
     size_t read_bytes = fread(&input_stream->shift_register.senior, sizeof(uint32_t), 1, input_stream->handle);
     if (read_bytes != 1) {
-        REPORT("Error populating senior part of shift buffer " 
+        UFO_REPORT("Error populating senior part of shift buffer " 
                 "(read %li bytes instead of the expected %i).\n", 
                 read_bytes, 1);
     }
     read_bytes = fread(&input_stream->shift_register.junior, sizeof(uint32_t), 1, input_stream->handle);
     if (read_bytes != 1) {
-        REPORT("Error populating junior part of shift buffer " 
+        UFO_REPORT("Error populating junior part of shift buffer " 
                 "(read %li bytes instead of the expected %i).\n", 
                 read_bytes, 1);
     }
@@ -140,12 +140,12 @@ int FileBitStream_seek_bit(FileBitStream *input_stream, uint64_t bit_offset) {
     for (int extra_bit = 0; extra_bit < remainder_bit_offset; extra_bit++) {
         int bit = FileBitStream_read_bit(input_stream);
         if (bit == -1) {
-            REPORT("Seek error, unexpected EOF at %li.", 
+            UFO_REPORT("Seek error, unexpected EOF at %li.", 
                     byte_offset * 8 + extra_bit);
             return -1;
         }
         if (bit == -2) {
-            REPORT("Seek error.");
+            UFO_REPORT("Seek error.");
             return -2;
         }        
     }    
@@ -157,7 +157,7 @@ int FileBitStream_seek_bit(FileBitStream *input_stream, uint64_t bit_offset) {
 void FileBitStream_free(FileBitStream *input_stream) {   
     // Close file associated with stream
     if (fclose(input_stream->handle) == EOF) {
-        WARN("Failed to close file at %s.\n", input_stream->path); 
+        UFO_WARN("Failed to close file at %s.\n", input_stream->path); 
     }
 
     // Free memory
