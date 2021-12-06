@@ -1,13 +1,16 @@
 #include "blocks.h"
 #include "block.h"
 #include "bitstream.h"
+#include "shift.h"
+
+#include "../debug.h"
 
 Blocks *Blocks_parse(const char *input_file_path) {
 
     // Open file for reading.
     FileBitStream *input_stream = FileBitStream_new(input_file_path);
     if (input_stream == NULL) {
-        REerror("Cannot open file %s.\n", input_file_path);  
+        UFO_LOG("Cannot open file %s.\n", input_file_path);  
         return NULL;
     }
 
@@ -43,7 +46,7 @@ Blocks *Blocks_parse(const char *input_file_path) {
                (input_stream->read_bits - start_offset[blocks]) >= 40) {
                 end_offset[blocks] = input_stream->read_bits - 1;
                 if (blocks > 0) {
-                    LOG("Block %li runs from %li to %li (incomplete)\n",
+                    UFO_LOG("Block %li runs from %li to %li (incomplete)\n",
                             blocks, 
                             start_offset[blocks], 
                             end_offset[blocks]);
@@ -73,7 +76,7 @@ Blocks *Blocks_parse(const char *input_file_path) {
                 && (end_offset[blocks] 
                 - start_offset[blocks]) >= 130) {
 
-                LOG("Block %li runs from %li to %li\n",
+                UFO_LOG("Block %li runs from %li to %li\n",
                     boundaries->blocks + 1, 
                     start_offset[blocks], 
                     end_offset[blocks]);
@@ -133,7 +136,7 @@ Blocks *Blocks_new(const char *filename) {
         // __block = i;
         Block *block = Block_from(blocks, i);        
         int output_buffer_occupancy = Block_decompress(block, output_buffer_size, output_buffer);
-        LOG("Finished decompressing block %li, found %i elements\n", i, output_buffer_occupancy);   
+        UFO_LOG("Finished decompressing block %li, found %i elements\n", i, output_buffer_occupancy);   
 
         // Cleanup: we don't actually need the block for anything, except size.
         Block_free(block);

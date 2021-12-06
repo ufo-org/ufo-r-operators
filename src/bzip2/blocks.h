@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 // This is the maximum number of blocks that we expect in a file. We cannot
 // process more than this number. 50K blocks represents 40GB+ of uncompressed

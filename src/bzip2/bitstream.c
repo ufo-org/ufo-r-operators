@@ -1,5 +1,8 @@
 #include "bitstream.h"
 
+#include <stdlib.h>
+#include "../debug.h"
+
 FileBitStream *FileBitStream_new(const char *input_file_path) {
     // Allocate bit stream for reading
     FileBitStream *input_stream = (FileBitStream *) malloc(sizeof(FileBitStream));

@@ -12,6 +12,8 @@
 #include <errno.h>
 #include <assert.h>
 
+#include "../debug.h"
+
 int __block = 0;
 
 // These are the sizes of magic byte sequences in BZip files. All in bytes.
@@ -25,8 +27,8 @@ const unsigned char block_magic[]  = { 0x31, 0x41, 0x59, 0x26, 0x53, 0x59 };
 const unsigned char footer_magic[] = { 0x17, 0x72, 0x45, 0x38, 0x50, 0x90 };
 
 void Block_free(Block *block) {
-    LOG("Free %p\n", block);
-    LOG("Free %p\n", block->buffer);
+    UFO_LOG("Free %p\n", block);
+    UFO_LOG("Free %p\n", block->buffer);
     free(block->buffer);
     free(block);
 }
@@ -44,7 +46,7 @@ Block *Block_from(Blocks *boundaries, size_t index) {
     const uint64_t payload_size_in_bits = block_end_offset_in_bits - block_start_offset_in_bits + 1;
     const uint64_t header_end_offset_in_bits = boundaries->start_offset[0];
 
-    LOG("Reading block %li from file %s between offsets %li and %li (%lib)\n",
+    UFO_LOG("Reading block %li from file %s between offsets %li and %li (%lib)\n",
         index, boundaries->path, block_end_offset_in_bits, 
         block_start_offset_in_bits, payload_size_in_bits);
 
@@ -80,7 +82,7 @@ Block *Block_from(Blocks *boundaries, size_t index) {
     uint64_t buffer_size_in_bytes = buffer_size_in_bits / 8;
 
 
-    LOG("Preparing buffer of size %lib = %ib + %ib + %lib + %ib + %ib\n",
+    UFO_LOG("Preparing buffer of size %lib = %ib + %ib + %lib + %ib + %ib\n",
         buffer_size_in_bits, 32, 105, payload_size_in_bits, 80, padding);
 
     // Alloc the buffre for the chunk
@@ -118,7 +120,7 @@ Block *Block_from(Blocks *boundaries, size_t index) {
 
     // Read 32-bit CRC, which is just behind the boundary
     uint32_t block_crc = FileBitStream_read_uint32(input_stream);
-    LOG("Block CRC %08x.\n", block_crc);
+    UFO_LOG("Block CRC %08x.\n", block_crc);
     if (block_crc < 0) {
         UFO_REPORT("Cannot read uint32 from bit stream.\n");
         FileBitStream_free(input_stream);
@@ -135,7 +137,7 @@ Block *Block_from(Blocks *boundaries, size_t index) {
     size_t block_end_byte_aligned_offset_in_bits = (payload_size_in_bits & (~0x07)) + block_start_offset_in_bits;
     size_t remaining_byte_unaligned_bits = (payload_size_in_bits & (0x07));
 
-    LOG("The block has to read until offset %lib = %lib + %lib. [%lib]\n", 
+    UFO_LOG("The block has to read until offset %lib = %lib + %lib. [%lib]\n", 
             block_end_offset_in_bits,
             block_end_byte_aligned_offset_in_bits, 
             remaining_byte_unaligned_bits,
@@ -239,11 +241,11 @@ int Block_decompress(Block *block, size_t output_buffer_size, char *output_buffe
     // Do the do.
     int result = BZ2_bzDecompress(stream);
 
-    LOG("Decompressed bytes (only 40 first): ");
-    for (int i = 0; i < 40; i++) {
-        LOG_SHORT("%02x ", output_buffer[i]);
-    }
-    LOG_SHORT("\n");
+    // LOG("Decompressed bytes (only 40 first): ");
+    // for (int i = 0; i < 40; i++) {
+    //     LOG_SHORT("%02x ", output_buffer[i]);
+    // }
+    // LOG_SHORT("\n");
 
     if (result != BZ_OK && result != BZ_STREAM_END) { 
         UFO_REPORT("Cannot process stream, error no.: %i.\n", result);
@@ -260,13 +262,13 @@ int Block_decompress(Block *block, size_t output_buffer_size, char *output_buffe
     };
 
     if (result == BZ_STREAM_END) {        
-        LOG("Finshed processing stream.\n");  
+        UFO_LOG("Finshed processing stream.\n");  
         BZ2_bzDecompressEnd(stream); 
         return output_buffer_size - stream->avail_out;
     };
 
     if (stream->avail_out == 0) {   
-        LOG("Stream ended: no data read.\n");  
+        UFO_LOG("Stream ended: no data read.\n");  
         BZ2_bzDecompressEnd(stream);
         return output_buffer_size; 
     };
