@@ -7,7 +7,8 @@
 #include <string.h>
 #include <pthread.h>
 #include <errno.h>
-#include <assert.h>
+
+#include "safety_first.h"
 
 #define USE_RINTERNALS
 #include <R.h>
@@ -32,9 +33,8 @@ static int32_t BZip2_populate_bytes(void* user_data, uintptr_t start, uintptr_t 
 
     Blocks *blocks = (Blocks *) user_data;
 
-    // TODO DEBUG
     for (size_t block = 0; block < blocks->blocks; block ++) {
-        REprintf("UFO checking block lengths: block %li : decompressed %li-%li [%li]\n", block,
+        UFO_LOG("UFO checking block lengths: block %li : decompressed %li-%li [%li]\n", block,
             blocks->decompressed_start_offset[block], blocks->decompressed_end_offset[block], 
             blocks->decompressed_end_offset[block] - blocks->decompressed_start_offset[block] + 1);
     }
@@ -46,18 +46,17 @@ static int32_t BZip2_populate_bytes(void* user_data, uintptr_t start, uintptr_t 
     for (; block_index < blocks->blocks; block_index++) {
         if (start >= blocks->decompressed_start_offset[block_index] && start <= blocks->decompressed_end_offset[block_index]) { 
             found_start = true;
-            // TODO DEBUG
-            REprintf("UFO will start at block %li: start=%li <= decompressed_offset=%li\n", 
+            UFO_LOG("UFO will start at block %li: start=%li <= decompressed_offset=%li\n", 
                 block_index, start, blocks->decompressed_start_offset[block_index]);
             break;
         }
-        REprintf("UFO skips block %li: start=%li <= decompressed_offset=%li \n", 
+       UFO_LOG("UFO skips block %li: start=%li <= decompressed_offset=%li \n", 
             block_index, start, blocks->decompressed_start_offset[block_index]);
     }
 
     // The start index is not within any of the blocks?
     if (!found_start) {
-        REprintf("Start index %li is not within any of the BZip2 blocks.\n", start); 
+        UFO_LOG("Start index %li is not within any of the BZip2 blocks.\n", start); 
         return 1;
     }
 
@@ -65,8 +64,7 @@ static int32_t BZip2_populate_bytes(void* user_data, uintptr_t start, uintptr_t 
     // We calculate the bytes_to_skip: the offset of the start of the UFO segment with
     // respect to the first value in the Bzip2 block.
     size_t bytes_to_skip = start - (blocks->decompressed_start_offset[block_index]);
-    // TODO DEBUG
-    REprintf("UFO will skip %lu bytes of block %lu\n", bytes_to_skip, block_index);
+    UFO_LOG("UFO will skip %lu bytes of block %lu\n", bytes_to_skip, block_index);
 
     // The index in the target buffer.
     // size_t target_index = 0;
@@ -89,36 +87,30 @@ static int32_t BZip2_populate_bytes(void* user_data, uintptr_t start, uintptr_t 
     // the prerequisite number of bytes of data.
     for (; block_index < blocks->blocks; block_index++) {
 
-        // TODO DEBUG
-        REprintf("UFO loads and decompresses block %li.\n", block_index);
+        UFO_LOG("UFO loads and decompresses block %li.\n", block_index);
 
         // Retrive and decompress the block.
         Block *block = Block_from(blocks, block_index);
         int decompressed_buffer_occupancy = Block_decompress(block, decompressed_buffer_size, decompressed_buffer);
         if (decompressed_buffer_occupancy <= 0) {
-            // TOOD DEBUG
-            REprintf("UFO failed to decompress BZip.\n");
+            UFO_REPORT("UFO failed to decompress BZip.\n");
             return -1;
         } else {
-            // TODO DEBUG
-            REprintf("UFO retrieved %i elements by decompressing block %li.\n", 
+            UFO_LOG("UFO retrieved %i elements by decompressing block %li.\n", 
                 decompressed_buffer_occupancy, block_index);
         }
         size_t elements_to_copy = decompressed_buffer_occupancy - bytes_to_skip;
-        // TODO DEBUG
-        REprintf("UFO can retrieve %lu = %i - %li elements from BZip block "
+        UFO_LOG("UFO can retrieve %lu = %i - %li elements from BZip block "
             "and needs to grab %lu elements to fill the target location.\n", 
             elements_to_copy, decompressed_buffer_occupancy, bytes_to_skip, left_to_fill_in_target);
         if (elements_to_copy > left_to_fill_in_target) {            
             elements_to_copy = left_to_fill_in_target;
         }        
-        // TODO DEBUG
-        REprintf("UFO will grab %lu elements from BZip decompressed block to fill the target location.\n", 
+        UFO_LOG("UFO will grab %lu elements from BZip decompressed block to fill the target location.\n", 
             elements_to_copy);
-        assert(decompressed_buffer_occupancy >= bytes_to_skip);
+        make_sure(decompressed_buffer_occupancy >= bytes_to_skip, "More bytes to skip, than bytes in buffer");
 
-        // TODO DEBUG
-        REprintf("UFO copies %lu elements from decompressed block %lu to target area %p = %p + %lu\n", 
+        UFO_LOG("UFO copies %lu elements from decompressed block %lu to target area %p = %p + %lu\n", 
             elements_to_copy, block_index, decompressed_buffer + bytes_to_skip, 
             decompressed_buffer, bytes_to_skip);
 
@@ -158,7 +150,7 @@ static int32_t BZip2_populate_bytes(void* user_data, uintptr_t start, uintptr_t 
 
     // TODO check if found end
     if (!found_end) {
-        REprintf("did not find a block containing the end of "
+        UFO_REPORT("did not find a block containing the end of "
                 "the segment range [%li-%li].\n", start, end);
         return 1;
     }
