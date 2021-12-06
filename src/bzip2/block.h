@@ -12,8 +12,6 @@ typedef struct {
     size_t  max_size;
 } Block;
 
-void Block_free(Block *block);
-
 Block *Block_from(Blocks *boundaries, size_t index);
-
+void Block_free(Block *block);
 int Block_decompress(Block *block, size_t output_buffer_size, char *output_buffer);

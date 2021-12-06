@@ -14,8 +14,6 @@
 
 #include "../debug.h"
 
-int __block = 0;
-
 // These are the sizes of magic byte sequences in BZip files. All in bytes.
 const int stream_magic_size = 4;
 const int block_magic_size = 6;

@@ -133,7 +133,6 @@ Blocks *Blocks_new(const char *filename) {
     for (size_t i = 0; i < blocks->blocks; i++) {
 
         // Extract a single compressed block.
-        // __block = i;
         Block *block = Block_from(blocks, i);        
         int output_buffer_occupancy = Block_decompress(block, output_buffer_size, output_buffer);
         UFO_LOG("Finished decompressing block %li, found %i elements\n", i, output_buffer_occupancy);   
