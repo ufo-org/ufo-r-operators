@@ -34,6 +34,8 @@ export(ufo_matrix_bin)
 export(ufo_integer_seq)
 export(ufo_numeric_seq)
 
+export(ufo_write_protect)
+
 export(ufo_csv)
 
 # Chunking functions

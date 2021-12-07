@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
-#include <errno.h>
+// #include <pthread.h>
+// #include <errno.h>
 
 #include "safety_first.h"
 

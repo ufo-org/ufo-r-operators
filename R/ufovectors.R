@@ -340,6 +340,13 @@ ufo_character_bz2 <- function(path, read_only = FALSE, min_load_count = 0, add_c
              "ufo", add_class)
 }
 
+ufo_write_protect <- function(vector, read_only = FALSE, min_load_count = 0, add_class = .check_add_class()) {
+  .add_class(.Call(UFO_C_write_protect,
+                    vector,
+                    as.logical(.expect_exactly_one(read_only)),
+                    as.integer(.expect_exactly_one(min_load_count))),
+             "ufo", add_class)
+}
 
 
 
@@ -358,8 +365,6 @@ ufo_character_bz2 <- function(path, read_only = FALSE, min_load_count = 0, add_c
 # ufo_logical       <- function(size, populate_with_NAs, min_load_count, ...)
 # ufo_raw           <- function(size,                    min_load_count, ...)
 # ufo_character     <- function(size, populate_with_NAs, min_load_count, ...)
-
-
 
 # ufo_bind          <- function(..., read_only, min_load_count)
 # ufo_write_protect <- function(vector, read_only, min_load_count, ...)
