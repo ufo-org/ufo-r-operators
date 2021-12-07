@@ -52,6 +52,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"cplxsxp_bzip2",           (DL_FUNC) &ufo_cplxsxp_bzip2,               3},
     {"lglsxp_bzip2",            (DL_FUNC) &ufo_lglsxp_bzip2,                3},
     {"vecsxp_bzip2",            (DL_FUNC) &ufo_vecsxp_bzip2,                3},
+    {"strsxp_bzip2",            (DL_FUNC) &ufo_strsxp_bzip2,                3},
     
     // CSV support
     {"csv",						(DL_FUNC) &ufo_csv,							6},

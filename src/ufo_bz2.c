@@ -72,15 +72,15 @@ SEXP ufo_bzip2(ufo_vector_type_t type, SEXP/*STRSXPXP*/ filename, SEXP/*LGLSXP*/
     int min_load_count_value = __extract_int_or_die(min_load_count);
     const char *path = __extract_path_or_die(filename);    
 
-    size_t element_size = __get_element_size(UFO_RAW);
+    size_t element_size = __get_element_size(type);
     BZip2 *bzip2 = BZip2_new(element_size, path);
    
     // Create a source struct for UFOs.
     ufo_source_t* source = (ufo_source_t*) malloc(sizeof(ufo_source_t));
 
     // Element size and count metadata
-    source->vector_type = UFO_RAW;
-    source->element_size = __get_element_size(UFO_RAW);
+    source->vector_type = type;
+    source->element_size = __get_element_size(type);
     source->vector_size = bzip2->blocks->decompressed_size;
 
     // Behavior specification

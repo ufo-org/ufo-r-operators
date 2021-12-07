@@ -8,4 +8,5 @@ SEXP ufo_rawsxp_bzip2 (SEXP/*STRSXP*/ path, SEXP/*LGLSXP*/ read_only, SEXP/*INTS
 SEXP ufo_cplxsxp_bzip2(SEXP/*STRSXP*/ path, SEXP/*LGLSXP*/ read_only, SEXP/*INTSXP*/ min_load_count);
 SEXP ufo_lglsxp_bzip2 (SEXP/*STRSXP*/ path, SEXP/*LGLSXP*/ read_only, SEXP/*INTSXP*/ min_load_count);
 SEXP ufo_vecsxp_bzip2 (SEXP/*STRSXP*/ path, SEXP/*LGLSXP*/ read_only, SEXP/*INTSXP*/ min_load_count);
-// SEXP ufo_strsxp_bzip2 (SEXP/*STRSXP*/ path, SEXP/*LGLSXP*/ read_only, SEXP/*INTSXP*/ min_load_count); 
+SEXP ufo_charsxp_bzip2(SEXP/*STRSXP*/ path, SEXP/*LGLSXP*/ read_only, SEXP/*INTSXP*/ min_load_count); 
+SEXP ufo_strsxp_bzip2 (SEXP/*STRSXP*/ path, SEXP/*LGLSXP*/ read_only, SEXP/*INTSXP*/ min_load_count); 
