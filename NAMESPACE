@@ -10,6 +10,13 @@ export(ufo_raw)
 export(ufo_character)
 export(ufo_vector)
 
+export(ufo_integer_bz2)
+export(ufo_numeric_bz2)
+export(ufo_complex_bz2)
+export(ufo_logical_bz2)
+export(ufo_raw_bz2)
+export(ufo_character_bz2)
+
 export(ufo_integer_bin)
 export(ufo_numeric_bin)
 export(ufo_complex_bin)

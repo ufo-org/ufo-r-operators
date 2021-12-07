@@ -20,9 +20,11 @@ typedef struct {
     uint64_t decompressed_end_offset[MAX_BLOCKS];   
     size_t bad_blocks;
     size_t decompressed_size;
+    size_t buffer_size;
 } Blocks;
 
 Blocks *Blocks_parse(const char *input_file_path);
-Blocks *Blocks_new(const char *filename);
+Blocks *Blocks_new(const char *filename, size_t buffer_size);
 void Blocks_free(Blocks *blocks);
+int32_t Blocks_read(Blocks *blocks, uintptr_t start /*byte index*/, uintptr_t end /*byte index*/, unsigned char* target);
 

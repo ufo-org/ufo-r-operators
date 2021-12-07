@@ -297,6 +297,51 @@ ufo_store_bin <- function(path, vector) {
    invisible(.Call(UFO_C_store_bin, .check_path(.expect_exactly_one(path)), vector))
 }
 
+ufo_integer_bz2   <- function(path, read_only = FALSE, min_load_count = 0, add_class = .check_add_class()) {
+  .add_class(.Call(UFO_C_intsxp_bzip2,
+                    path.expand(.check_path(.expect_exactly_one(path))),
+                    as.logical(.expect_exactly_one(read_only)),
+                    as.integer(.expect_exactly_one(min_load_count))),
+             "ufo", add_class)
+}
+ufo_numeric_bz2   <- function(path, read_only = FALSE, min_load_count = 0, add_class = .check_add_class()) {
+  .add_class(.Call(UFO_C_realsxp_bzip2,
+                    path.expand(.check_path(.expect_exactly_one(path))),
+                    as.logical(.expect_exactly_one(read_only)),
+                    as.integer(.expect_exactly_one(min_load_count))),
+             "ufo", add_class)
+}
+ufo_complex_bz2   <- function(path, read_only = FALSE, min_load_count = 0, add_class = .check_add_class()) {
+  .add_class(.Call(UFO_C_cplxsxp_bzip2,
+                    path.expand(.check_path(.expect_exactly_one(path))),
+                    as.logical(.expect_exactly_one(read_only)),
+                    as.integer(.expect_exactly_one(min_load_count))),
+             "ufo", add_class)
+}
+ufo_logical_bz2   <- function(path, read_only = FALSE, min_load_count = 0, add_class = .check_add_class()) {
+  .add_class(.Call(UFO_C_lglsxp_bzip2,
+                    path.expand(.check_path(.expect_exactly_one(path))),
+                    as.logical(.expect_exactly_one(read_only)),
+                    as.integer(.expect_exactly_one(min_load_count))),
+             "ufo", add_class)
+}
+ufo_raw_bz2       <- function(path, read_only = FALSE, min_load_count = 0, add_class = .check_add_class()) {
+  .add_class(.Call(UFO_C_rawsxp_bzip2,
+                    path.expand(.check_path(.expect_exactly_one(path))),
+                    as.logical(.expect_exactly_one(read_only)),
+                    as.integer(.expect_exactly_one(min_load_count))),
+             "ufo", add_class)
+}
+ufo_character_bz2 <- function(path, read_only = FALSE, min_load_count = 0, add_class = .check_add_class()) {
+  .add_class(.Call(UFO_C_strsxp_bzip2,
+                    path.expand(.check_path(.expect_exactly_one(path))),
+                    as.logical(.expect_exactly_one(read_only)),
+                    as.integer(.expect_exactly_one(min_load_count))),
+             "ufo", add_class)
+}
+
+
+
 
 # ufo_integer_seq   <- function(from, to, by, read_only, min_load_count, ...)
 # ufo_numeric_seq   <- function(from, to, by, read_only, min_load_count, ...)
@@ -314,12 +359,7 @@ ufo_store_bin <- function(path, vector) {
 # ufo_raw           <- function(size,                    min_load_count, ...)
 # ufo_character     <- function(size, populate_with_NAs, min_load_count, ...)
 
-# ufo_integer_bz2   <- function(path, read_only, min_load_count, ...)
-# ufo_numeric_bz2   <- function(path, read_only, min_load_count, ...)
-# ufo_complex_bz2   <- function(path, read_only, min_load_count, ...)
-# ufo_logical_bz2   <- function(path, read_only, min_load_count, ...)
-# ufo_raw_bz2       <- function(path  read_only, min_load_count, ...)
-# ufo_character_bz2 <- function(path, read_only, min_load_count, ...)
+
 
 # ufo_bind          <- function(..., read_only, min_load_count)
 # ufo_write_protect <- function(vector, read_only, min_load_count, ...)

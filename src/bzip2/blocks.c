@@ -3,6 +3,7 @@
 #include "bitstream.h"
 #include "shift.h"
 
+#include "../safety_first.h"
 #include "../debug.h"
 
 Blocks *Blocks_parse(const char *input_file_path) {
@@ -25,7 +26,7 @@ Blocks *Blocks_parse(const char *input_file_path) {
         return NULL;
     }
 
-    boundaries->path = input_file_path;
+    boundaries->path = strdup(input_file_path);
     boundaries->blocks = 0;
     boundaries->bad_blocks = 0;
 
@@ -115,16 +116,17 @@ Blocks *Blocks_parse(const char *input_file_path) {
 }
 
 void Blocks_free(Blocks *blocks) {
-    // Nothing to free, 
+    free((void *) blocks->path); // because allocated by strdup
     free(blocks);
 }
 
-Blocks *Blocks_new(const char *filename) {
+Blocks *Blocks_new(const char *filename, size_t buffer_size) {
     // Parse the file.
     Blocks *blocks = Blocks_parse(filename);
 
     // Create the structures for outputting the decompressed data into
     // (temporarily).
+    blocks->buffer_size = buffer_size;
     size_t output_buffer_size = 1024 * 1024 * 1024; // 1MB
     char *output_buffer = (char *) calloc(output_buffer_size, sizeof(char));
     
@@ -158,4 +160,131 @@ Blocks *Blocks_new(const char *filename) {
     // Add one, because end is inclusive.
     blocks->decompressed_size = end_of_last_decompressed_block + 1;
     return blocks;
+}
+
+int32_t Blocks_read(Blocks *blocks, uintptr_t start /*byte index*/, uintptr_t end /*byte index*/, unsigned char* target) {
+
+    for (size_t block = 0; block < blocks->blocks; block ++) {
+        UFO_LOG("UFO checking block lengths: block %li : decompressed %li-%li [%li]\n", block,
+            blocks->decompressed_start_offset[block], blocks->decompressed_end_offset[block], 
+            blocks->decompressed_end_offset[block] - blocks->decompressed_start_offset[block] + 1);
+    }
+
+    size_t block_index = 0;
+    bool found_start = false;
+
+    // Ignore blocks that do not are not a part of the current segment.
+    for (; block_index < blocks->blocks; block_index++) {
+        if (start >= blocks->decompressed_start_offset[block_index] && start <= blocks->decompressed_end_offset[block_index]) { 
+            found_start = true;
+            UFO_LOG("UFO will start at block %li: start=%li <= decompressed_offset=%li\n", 
+                block_index, start, blocks->decompressed_start_offset[block_index]);
+            break;
+        }
+       UFO_LOG("UFO skips block %li: start=%li <= decompressed_offset=%li \n", 
+            block_index, start, blocks->decompressed_start_offset[block_index]);
+    }
+
+    // The start index is not within any of the blocks?
+    if (!found_start) {
+        UFO_LOG("Start index %li is not within any of the BZip2 blocks.\n", start); 
+        return 1;
+    }
+
+    // At this point block index is the index of the block containing the start.
+    // We calculate the bytes_to_skip: the offset of the start of the UFO segment with
+    // respect to the first value in the Bzip2 block.
+    size_t bytes_to_skip = start - (blocks->decompressed_start_offset[block_index]);
+    UFO_LOG("UFO will skip %lu bytes of block %lu\n", bytes_to_skip, block_index);
+
+    // The index in the target buffer.
+    // size_t target_index = 0;
+
+    // Temp buffers, because I don't know how to do it without it.
+    size_t decompressed_buffer_size = blocks->buffer_size; // 1MB
+    char *decompressed_buffer = (char *) calloc(decompressed_buffer_size, sizeof(char));
+    // memset(decompressed_buffer, 0x5c, decompressed_buffer_size); // FIXME remove
+
+    // Check if we filled all the requested bytes from all the necessary BZip blocks.
+    bool found_end = false;
+
+    // The offset in target at which to paste the next decompressed BZip block.
+    size_t offset_in_target = 0;
+
+    // The number of bytes we still have to generate.
+    size_t left_to_fill_in_target = end - start;
+
+    // Decompress blocks, until required number of decompressed blocks produce
+    // the prerequisite number of bytes of data.
+    for (; block_index < blocks->blocks; block_index++) {
+
+        UFO_LOG("UFO loads and decompresses block %li.\n", block_index);
+
+        // Retrive and decompress the block.
+        Block *block = Block_from(blocks, block_index);
+        int decompressed_buffer_occupancy = Block_decompress(block, decompressed_buffer_size, decompressed_buffer);
+        if (decompressed_buffer_occupancy <= 0) {
+            UFO_REPORT("UFO failed to decompress BZip.\n");
+            return -1;
+        } else {
+            UFO_LOG("UFO retrieved %i elements by decompressing block %li.\n", 
+                decompressed_buffer_occupancy, block_index);
+        }
+        size_t elements_to_copy = decompressed_buffer_occupancy - bytes_to_skip;
+        UFO_LOG("UFO can retrieve %lu = %i - %li elements from BZip block "
+            "and needs to grab %lu elements to fill the target location.\n", 
+            elements_to_copy, decompressed_buffer_occupancy, bytes_to_skip, left_to_fill_in_target);
+        if (elements_to_copy > left_to_fill_in_target) {            
+            elements_to_copy = left_to_fill_in_target;
+        }        
+        UFO_LOG("UFO will grab %lu elements from BZip decompressed block to fill the target location.\n", 
+            elements_to_copy);
+        make_sure(decompressed_buffer_occupancy >= bytes_to_skip, "More bytes to skip, than bytes in buffer");
+
+        UFO_LOG("UFO copies %lu elements from decompressed block %lu to target area %p = %p + %lu\n", 
+            elements_to_copy, block_index, decompressed_buffer + bytes_to_skip, 
+            decompressed_buffer, bytes_to_skip);
+
+        // Copy the contents of the block to the target area. I can't do this
+        // without this intermediate buffer, because the first block might need
+        // to discard some number of bytes from the front. 
+        // 
+        // Also the last one has to disregards some number of bytes from the
+        // back, but the block won't produce anything unless it's given room to
+        // write out the whole block. <-- TODO: this needs verification        
+        memcpy(/* destination */ target + offset_in_target, 
+               /* source      */ decompressed_buffer + bytes_to_skip, 
+               /* elements    */ elements_to_copy); // TODO remove elements to make sure we don't load more than `end`
+
+        // Start filling the target in the next iteration from the palce we
+        // finished here.
+        offset_in_target += elements_to_copy;
+
+        // We copied these many elements already.
+        left_to_fill_in_target -= elements_to_copy;     
+
+        // Only the first block has bytes_to_skip != 0.
+        bytes_to_skip = 0;   
+
+        // Cleanup.
+        Block_free(block);        
+
+        if ((end - 1) >= blocks->decompressed_start_offset[block_index] 
+            && (end - 1) <= blocks->decompressed_end_offset[block_index]) { 
+            found_end = true;
+            break;
+        }
+    }
+
+    // Cleanup
+    free(decompressed_buffer);
+
+    // TODO check if found end
+    if (!found_end) {
+        UFO_REPORT("did not find a block containing the end of "
+                "the segment range [%li-%li].\n", start, end);
+        return 1;
+    }
+
+    return 0;
 }
