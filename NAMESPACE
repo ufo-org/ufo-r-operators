@@ -36,6 +36,8 @@ export(ufo_numeric_seq)
 
 export(ufo_write_protect)
 
+export(ufo_bind)
+
 export(ufo_csv)
 
 # Chunking functions
