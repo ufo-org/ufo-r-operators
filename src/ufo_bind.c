@@ -340,7 +340,7 @@ SEXP ufo_bind (SEXP/*VECSXP*/ vectors, SEXP/*LGLSXP*/ read_only, SEXP/*INTSXP*/ 
         case UFO_RAW  : source->population_function = rawsxp_bind_populate;  break;
         case UFO_STR  : source->population_function = strsxp_bind_populate;  break;
         case UFO_VEC  : source->population_function = vecsxp_bind_populate;  break;    
-        default:
+        default: Rf_error("Unsupported UFO type: %s", type2char(common_type));
     }
 
     // Chunk-related parameters

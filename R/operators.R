@@ -150,7 +150,7 @@ ufo_apply <- function(FUN, ..., MoreArgs = NULL, USE.NAMES = TRUE, chunk_size=10
     # Write the results of f for the chunk into the 
     # approporiate space in one of the result vector.
     result[index_range] <- result_chunk
-  }  
+  }
 
   # Do Map naming exit stuff.
   if (USE.NAMES && length(input_vectors)) {

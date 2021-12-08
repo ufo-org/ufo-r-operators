@@ -8,6 +8,8 @@
 #include "debug.h"
 #include "helpers.h"
 
+#include "../include/ufo_r/src/ufos_writeback.h"
+
 // select name from (select row_number() over () nth, name from league) as numbered where numbered.nth = 999
 // select column_name, data_type from information_schema.columns where table_name = 'league'
 
@@ -29,12 +31,6 @@ typedef struct {
     const char *table;
     const char *column;
 } psql_t;
-
-int32_t psql_populate(void* user_data, uintptr_t start, uintptr_t end, unsigned char* target) {
-    // TODO obviously
-
-    return 0;
-}
 
 psql_t *psql_new(PGconn *database, const char *table, const char *column) {
     psql_t *psql = (psql_t *) malloc(sizeof(psql_t));
@@ -110,6 +106,18 @@ int32_t strsxp_psql_populate(void* user_data, uintptr_t start, uintptr_t end, un
     return retrieve_from_table(psql->database, psql->table, psql->column, start, end, string_action, target);
 }
 
+void intsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
+    psql_t *psql = (psql_t *) user_data;
+    //return retrieve_from_table(psql->database, psql->table, psql->column, start, end, int_action, target);
+    if (event.tag == Reset) { return; }
+
+    uintptr_t start = event.writeback.start_idx;
+    uintptr_t end = event.writeback.end_idx;
+    const int *data = (const int *) event.writeback.data;
+
+    return;
+}
+
 SEXP ufo_psql(SEXP/*STRSXP*/ db, SEXP/*STRSXP*/ table, SEXP/*STRSXP*/ column, SEXP/*LGLSXP*/ read_only, SEXP/*INTSXP*/ min_load_count) {
     // Read the arguements into practical types (with checks).
     bool read_only_value = __extract_boolean_or_die(read_only);
@@ -151,8 +159,7 @@ SEXP ufo_psql(SEXP/*STRSXP*/ db, SEXP/*STRSXP*/ table, SEXP/*STRSXP*/ column, SE
         // Behavior specification
     source->data = psql_new(database, table_value, column_value);
     source->destructor_function = psql_free;
-    source->population_function = psql_populate;
-
+    
     switch (vector_type) {
         // case UFO_CHAR: source->population_function = charsxp_psql_populate; break;
         case UFO_REAL: source->population_function = realsxp_psql_populate; break;
@@ -162,7 +169,7 @@ SEXP ufo_psql(SEXP/*STRSXP*/ db, SEXP/*STRSXP*/ table, SEXP/*STRSXP*/ column, SE
         case UFO_RAW:  source->population_function = rawsxp_psql_populate;  break;
         case UFO_STR:  source->population_function = strsxp_psql_populate;  break;
         // case UFO_VEC:  source->population_function = vecsxp_psql_populate;  break;    
-        default:
+        default: Rf_error("Unsupported UFO type: %s", type2char(vector_type));
     }
 
     // Chunk-related parameters
