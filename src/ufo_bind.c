@@ -1,3 +1,5 @@
+#include "ufo_bind.h"
+
 #include "Rinternals.h"
 
 #include "stdbool.h"
@@ -360,3 +362,4 @@ SEXP ufo_bind (SEXP/*VECSXP*/ vectors, SEXP/*LGLSXP*/ read_only, SEXP/*INTSXP*/ 
 
     return ufo;
 }
+

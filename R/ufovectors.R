@@ -356,6 +356,16 @@ ufo_bind <- function(..., read_only = FALSE, min_load_count = 0, add_class = .ch
              "ufo", add_class)
 }
 
+ufo_psql <- function(db, table, column, read_only = FALSE, min_load_count = 0, add_class = .check_add_class()) {
+  .add_class(.Call(UFO_C_psql,
+                    as.character(.expect_exactly_one(db)),
+                    as.character(.expect_exactly_one(table)),
+                    as.character(.expect_exactly_one(column)),
+                    as.logical(.expect_exactly_one(read_only)),
+                    as.integer(.expect_exactly_one(min_load_count))),
+             "ufo", add_class)
+}
+
 
 # ufo_integer_seq   <- function(from, to, by, read_only, min_load_count, ...)
 # ufo_numeric_seq   <- function(from, to, by, read_only, min_load_count, ...)

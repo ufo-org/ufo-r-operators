@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/opt/R-4.0.2/include/**",
-                "/opt/R-4.0.2/src/include/**"
+                "/opt/R-4.0.2/src/include/**",
+                "/usr/include/postgresql"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
@@ -19,6 +20,17 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/opt/R-*/include/"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64"
+        },
+        {
+            "name": "Linux with psql",
+            "includePath": [
+                "${workspaceFolder}/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
