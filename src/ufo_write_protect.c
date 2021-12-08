@@ -114,8 +114,7 @@ int32_t charsxp_write_protect_populate(void* user_data, uintptr_t start, uintptr
     return 0;
 }
 
-void write_protect_free(void* data) {
-}
+void write_protect_free(void* data) {}
 
 SEXP ufo_write_protect(SEXP vector, SEXP/*LGLSXP*/ read_only, SEXP/*INTSXP*/ min_load_count) {
     PROTECT(vector);
@@ -131,14 +130,14 @@ SEXP ufo_write_protect(SEXP vector, SEXP/*LGLSXP*/ read_only, SEXP/*INTSXP*/ min
 
     // Element size and count metadata
     switch (type) {
-    case UFO_CHAR : source->vector_type = CHARSXP; break;
-    case UFO_LGL  : source->vector_type = LGLSXP;  break;
-    case UFO_INT  : source->vector_type = INTSXP;  break;
-    case UFO_REAL : source->vector_type = REALSXP; break;
-    case UFO_CPLX : source->vector_type = CPLXSXP; break;
-    case UFO_RAW  : source->vector_type = RAWSXP;  break;
-    case UFO_STR  : source->vector_type = STRSXP;  break;
-	case UFO_VEC  : source->vector_type = VECSXP;  break;    
+        case UFO_CHAR : source->vector_type = CHARSXP; break;
+        case UFO_LGL  : source->vector_type = LGLSXP;  break;
+        case UFO_INT  : source->vector_type = INTSXP;  break;
+        case UFO_REAL : source->vector_type = REALSXP; break;
+        case UFO_CPLX : source->vector_type = CPLXSXP; break;
+        case UFO_RAW  : source->vector_type = RAWSXP;  break;
+        case UFO_STR  : source->vector_type = STRSXP;  break;
+        case UFO_VEC  : source->vector_type = VECSXP;  break;    
     }
     source->element_size = __get_element_size(type);
     source->vector_size = XLENGTH(vector);
@@ -148,14 +147,14 @@ SEXP ufo_write_protect(SEXP vector, SEXP/*LGLSXP*/ read_only, SEXP/*INTSXP*/ min
     source->destructor_function = write_protect_free; //&destroy_data;
 
     switch (type) {
-    case UFO_CHAR : source->population_function = charsxp_write_protect_populate; break;
-    case UFO_LGL  : source->population_function = lglsxp_write_protect_populate;  break;
-    case UFO_INT  : source->population_function = intsxp_write_protect_populate;  break;
-    case UFO_REAL : source->population_function = realsxp_write_protect_populate; break;
-    case UFO_CPLX : source->population_function = cplxsxp_write_protect_populate; break;
-    case UFO_RAW  : source->population_function = rawsxp_write_protect_populate;  break;
-    case UFO_STR  : source->population_function = strsxp_write_protect_populate;  break;
-	case UFO_VEC  : source->population_function = vecsxp_write_protect_populate;  break;    
+        case UFO_CHAR : source->population_function = charsxp_write_protect_populate; break;
+        case UFO_LGL  : source->population_function = lglsxp_write_protect_populate;  break;
+        case UFO_INT  : source->population_function = intsxp_write_protect_populate;  break;
+        case UFO_REAL : source->population_function = realsxp_write_protect_populate; break;
+        case UFO_CPLX : source->population_function = cplxsxp_write_protect_populate; break;
+        case UFO_RAW  : source->population_function = rawsxp_write_protect_populate;  break;
+        case UFO_STR  : source->population_function = strsxp_write_protect_populate;  break;
+        case UFO_VEC  : source->population_function = vecsxp_write_protect_populate;  break;    
     }
     
     // Chunk-related parameters

@@ -5,6 +5,7 @@
 #include "ufo_seq.h"
 #include "ufo_bz2.h"
 #include "ufo_write_protect.h"
+#include "ufo_bind.h"
 #include "ufo_operators.h"
 
 #include <R_ext/Rdynload.h>
@@ -57,7 +58,10 @@ static const R_CallMethodDef CallEntries[] = {
     
     // Write protect
     {"write_protect",           (DL_FUNC) &ufo_write_protect,               3},
-    
+
+    // Bind multiple vectors
+    {"bind",					(DL_FUNC) &ufo_bind,						3},
+
     // CSV support
     {"csv",						(DL_FUNC) &ufo_csv,							6},
 

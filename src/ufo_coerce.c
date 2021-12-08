@@ -23,8 +23,8 @@ int element_as_integer(SEXP source, R_xlen_t index) {
 	case LGLSXP:  return logical_as_integer(LOGICAL_ELT(source, index));
 	case RAWSXP:  // We don't do that here.	
 	default:
-		Rf_error("Cannot coerce values from vector of type %i to integer", 
-		         TYPEOF(source)); // TODO pretty print
+		Rf_error("Cannot coerce values from vector of type %s to integer", 
+		         type2char(TYPEOF(source)));
 	}
 }
 
@@ -37,8 +37,8 @@ double element_as_real(SEXP source, R_xlen_t index) {
 	case LGLSXP:  return logical_as_real(LOGICAL_ELT(source, index));
 	case RAWSXP:  // We don't do that here.	
 	default:
-		Rf_error("Cannot coerce values from vector of type %i to real", 
-		         TYPEOF(source)); // TODO pretty print
+		Rf_error("Cannot coerce values from vector of type %s to real", 
+		         type2char(TYPEOF(source)));
 	}
 }
 
@@ -52,8 +52,8 @@ Rcomplex element_as_complex(SEXP source, R_xlen_t index) {
 	case LGLSXP:  return logical_as_complex(LOGICAL_ELT(source, index));
 	case RAWSXP:  // We don't do that here.	
 	default:
-		Rf_error("Cannot coerce values from vector of type %i to complex", 
-		         TYPEOF(source)); // TODO pretty print
+		Rf_error("Cannot coerce values from vector of type %s to complex", 
+		         type2char(TYPEOF(source)));
 	}
 }
 
@@ -66,8 +66,8 @@ SEXP/*CHARSXP*/ element_as_string(SEXP source, R_xlen_t index) {
 	case LGLSXP:  return logical_as_string(LOGICAL_ELT(source, index));
 	case RAWSXP:  return raw_as_string(RAW_ELT(source, index));
 	default:
-		Rf_error("Cannot coerce values from vector of type %i to int", 
-		         TYPEOF(source)); // TODO pretty print
+		Rf_error("Cannot coerce values from vector of type %s to int", 
+		         type2char(TYPEOF(source)));
 	}
 }
 
@@ -80,8 +80,8 @@ Rboolean element_as_logical(SEXP source, R_xlen_t index) {
 	case LGLSXP:  return LOGICAL_ELT(source, index);
 	case RAWSXP:  // We don't do that here.	
 	default:
-		Rf_error("Cannot coerce values from vector of type %i to logical", 
-		         TYPEOF(source)); // TODO pretty print
+		Rf_error("Cannot coerce values from vector of type %s to logical", 
+		         type2char(TYPEOF(source)));
 	}
 }
 
@@ -89,8 +89,8 @@ Rbyte element_as_raw(SEXP source, R_xlen_t index) {
 	switch (TYPEOF(source))	{
     case RAWSXP: return RAW_ELT(source, index);
 	default:
-		Rf_error("Cannot coerce values from vector of type %i to raw", 
-		         TYPEOF(source)); // TODO pretty print
+		Rf_error("Cannot coerce values from vector of type %s to raw", 
+		         type2char(TYPEOF(source)));
 	}
 }
 
@@ -157,6 +157,10 @@ int string_as_integer(SEXP/*CHARSXP*/ value) { // This could use careful cleanup
         return NA_INTEGER;
     }
     return (int) value_as_double;
+}
+
+Rbyte logical_as_raw(Rboolean value) {
+    return (Rbyte) value;
 }
 
 int logical_as_integer(Rboolean value) {
@@ -327,4 +331,16 @@ SEXP/*CHARSXP*/ raw_as_string(Rbyte value) {
     char buffer[3];
     sprintf(buffer, "%02x", value);
     return mkChar(buffer);
+}
+
+int raw_as_integer(Rbyte value) {
+    return (int) value;
+}
+
+double raw_as_real(Rbyte value) {
+    return (double) value;
+}
+
+Rcomplex raw_as_complex(Rbyte value) {
+    return complex((double) value, 0);
 }
