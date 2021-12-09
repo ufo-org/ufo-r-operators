@@ -87,6 +87,7 @@ SEXP ufo_bzip2(ufo_vector_type_t type, SEXP/*STRSXPXP*/ filename, SEXP/*LGLSXP*/
     source->data = (void*) bzip2;
     source->destructor_function = BZip2_free; //&destroy_data;
     source->population_function = BZip2_populate;
+    source->writeback_function = NULL;
     
     // Chunk-related parameters
     source->read_only = read_only_value;

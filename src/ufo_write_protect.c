@@ -157,6 +157,8 @@ SEXP ufo_write_protect(SEXP vector, SEXP/*LGLSXP*/ read_only, SEXP/*INTSXP*/ min
         case UFO_VEC  : source->population_function = vecsxp_write_protect_populate;  break;    
     }
     
+    source->writeback_function = NULL;
+
     // Chunk-related parameters
     source->read_only = read_only_value;
     source->min_load_count = __select_min_load_count(min_load_count_value, source->element_size);

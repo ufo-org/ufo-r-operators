@@ -343,6 +343,8 @@ SEXP ufo_bind (SEXP/*VECSXP*/ vectors, SEXP/*LGLSXP*/ read_only, SEXP/*INTSXP*/ 
         default: Rf_error("Unsupported UFO type: %s", type2char(common_type));
     }
 
+    source->writeback_function = NULL;
+
     // Chunk-related parameters
     source->read_only = read_only_value;
     source->min_load_count = __select_min_load_count(min_load_count_value, source->element_size);

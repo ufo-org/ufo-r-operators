@@ -8,6 +8,7 @@
 #include <Rinternals.h>
 
 #include "../include/ufo_r/src/ufos.h"
+#include "../include/ufo_r/src/ufos_writeback.h"
 #include "ufo_vectors.h"
 #include "ufo_metadata.h"
 #include "helpers.h"
@@ -32,6 +33,16 @@ void __destroy(void* user_data) {
     free(data);
 }
 
+void __writeback(void* user_data, UfoWriteListenerEvent event) {
+    if (event.tag == Reset) { return; }
+
+    uintptr_t start = event.writeback.start_idx;
+    uintptr_t end = event.writeback.end_idx;
+    const unsigned char *data = (const unsigned char *) event.writeback.data;
+
+    __write_to_file(user_data, start, end, data);
+}
+
 ufo_source_t* __make_source_or_die(ufo_vector_type_t type, const char *path, int *dimensions, size_t dimensions_length, bool read_only, int32_t min_load_count) {
 
     ufo_file_source_data_t *data = (ufo_file_source_data_t*) malloc(sizeof(ufo_file_source_data_t));
@@ -45,6 +56,7 @@ ufo_source_t* __make_source_or_die(ufo_vector_type_t type, const char *path, int
     }
 
     source->population_function = &__load_from_file;
+    source->writeback_function = &__writeback;
     source->destructor_function = &__destroy;
     source->data = (void*) data;
     source->vector_type = type;

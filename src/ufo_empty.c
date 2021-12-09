@@ -130,6 +130,7 @@ SEXP ufo_empty(ufo_vector_type_t type, R_xlen_t size, bool populate_with_na, int
 
     source->population_function = &__populate_empty;
     source->destructor_function = &__destroy_empty;
+	source->writeback_function = NULL;
     source->vector_type = type;
     source->element_size = __get_element_size(type);
     source->vector_size = size;

@@ -39,10 +39,11 @@ psql_t *psql_new(PGconn *database, const char *table, const char *column) {
     psql->table = strdup(table);
     psql->column = strdup(column);
 
-    int result = start_transaction(database);
-    if (result != 0) {
-        Rf_error("Cannot start transaction\n");
-    }
+    int result;
+    // int result = start_transaction(database);
+    // if (result != 0) {
+    //     Rf_error("Cannot start transaction\n");
+    // }
 
     psql->pk = retrieve_table_pk(database, table, column);
     if (psql->pk == NULL) {
@@ -54,10 +55,10 @@ psql_t *psql_new(PGconn *database, const char *table, const char *column) {
         Rf_error("Cannot create an auxiliary view for table \"%s\"\n", table);
     }
 
-    result = end_transaction(database);
-    if (result != 0) {
-        Rf_error("Cannot commit transaction\n");
-    }
+    // result = end_transaction(database);
+    // if (result != 0) {
+    //     Rf_error("Cannot commit transaction\n");
+    // }
     
     return psql;
 }
@@ -165,6 +166,8 @@ int string_writeback(uintptr_t index_in_vector, int index_in_target, const unsig
 }
 
 void intsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
+    REprintf("intsxp_psql_writeback\n");
+
     psql_t *psql = (psql_t *) user_data;
     if (event.tag == Reset) { return; }
 
@@ -292,6 +295,8 @@ SEXP ufo_psql(SEXP/*STRSXP*/ db, SEXP/*STRSXP*/ table, SEXP/*STRSXP*/ column, SE
         // case UFO_VEC:  source->population_function = vecsxp_psql_populate;  break;    
     default: Rf_error("Unsupported UFO type: %s", type2char(vector_type));
     }
+
+    // REprintf("Writeback listener 1 %p\n", source->writeback_function);
 
     // Chunk-related parameters
     source->read_only = read_only_value;

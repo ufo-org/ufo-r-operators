@@ -64,6 +64,70 @@ int32_t __load_from_file(void* user_data, uintptr_t start, uintptr_t end, unsign
     return 0;
 }
 
+int32_t __write_to_file(void* user_data, uintptr_t start, uintptr_t end, const unsigned char* contents) {
+
+    ufo_file_source_data_t* cfg = (ufo_file_source_data_t*) user_data;
+
+    if (__get_debug_mode()) {
+        REprintf("__write_file\n");
+        REprintf("    start index: %li\n", start);
+        REprintf("      end index: %li\n", end);
+        REprintf("memory contents: %p\n", (void *) contents);
+        REprintf("    source file: %s\n", cfg->path);
+        REprintf("    vector type: %d\n", cfg->vector_type);
+        REprintf("    vector size: %li\n", cfg->vector_size);
+        REprintf("   element size: %li\n", cfg->element_size);
+    }
+
+    // Open for writing, do not reuse the file handle
+    FILE* file = fopen(cfg->path, "wb");
+        if (!file) {
+        fclose(file);
+        REprintf("Error opening file '%s' for writing.", cfg->path); // FIXME change to UFO_LOG and UFO_REPORT
+        return -1;
+    }
+
+    int initial_seek_status = fseek(file, 0L, SEEK_END);
+    if (initial_seek_status < 0) {
+        // Could not seek in from file.
+        REprintf("Could not seek to the end of file.\n");
+        return 1;
+    }
+
+    long file_size_in_bytes = ftell(file);
+
+    long start_writing_from = cfg->element_size * start;
+    if (start_writing_from > file_size_in_bytes) {
+        // Start index out of bounds of the file.
+        REprintf("Start index out of bounds of the file.\n");
+        return 42;
+    }
+
+    long end_writing_at = cfg->element_size * end;
+    if (end_writing_at > file_size_in_bytes) {
+        // End index out of bounds of the file.
+        REprintf("End index out of bounds of the file.\n");
+        return 43;
+    }
+
+    int rewind_seek_status = fseek(file, start_writing_from, SEEK_SET);
+    if (rewind_seek_status < 0) {
+        // Could not seek in the file to position at start index.
+        REprintf("Could not seek in the file to position at start index.\n");
+        return 2;
+    }
+
+    size_t write_status = fwrite(contents, sizeof(const char), end - start, file);
+    if (write_status < end - start || write_status == 0) {
+        fclose(file);
+        REprintf("Error writing to file '%s'. Written: %i out of %li",
+                 cfg->path, write_status, end - start);
+        return 666;
+    }
+
+    return 0;
+}
+
 void __write_bytes_to_disk(const char *path, size_t size, const char *bytes) {
     //fprintf(stderr, "__write_bytes_to_disk(%s,%li,...)\n", path, size);
 

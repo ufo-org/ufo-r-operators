@@ -21,11 +21,10 @@ int32_t __load_from_file(
     void* user_data,
     uintptr_t start, uintptr_t end,
     unsigned char* target);
-
-// int __save_to_file(
-//     UfoPopulateData user_data,
-//     uint64_t start, uint64_t end,
-//     void* target);
+int32_t __write_to_file(
+    void* user_data, 
+    uintptr_t start, uintptr_t end, 
+    const unsigned char* contents);
 void __write_bytes_to_disk(const char *path, size_t size, const char *bytes);
 long __get_vector_length_from_file_or_die(const char * path, size_t element_size);
 FILE *__open_file_or_die(char const *path);

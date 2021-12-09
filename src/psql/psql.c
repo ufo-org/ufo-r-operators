@@ -165,8 +165,8 @@ int create_table_column_subscript(PGconn *connection, const char* table, const c
     UFO_LOG("Executing %s\n", query);
     PGresult *result = PQexec(connection, query);
 
-    if (PQresultStatus(result) != PGRES_TUPLES_OK) {
-        UFO_REPORT("CREATE VIEW command failed: '%s' (%s)\n", PQresultErrorMessage(result), query);
+    if (PQresultStatus(result) != PGRES_COMMAND_OK) {
+        UFO_REPORT("CREATE VIEW command failed: [%x] '%s' (%s)\n", PQresultStatus(result), PQresultErrorMessage(result), query);
         PQclear(result);
         PQfinish(connection);
         return 1;
@@ -179,7 +179,7 @@ int create_table_column_subscript(PGconn *connection, const char* table, const c
 int retrieve_from_table(PGconn *connection, const char* table, const char* column, uintptr_t start, uintptr_t end, psql_read action, unsigned char *target) {
     char query[MAX_QUERY_SIZE];
     sprintf(query, "SELECT %s FROM ufo_%s_%s_subscript WHERE nth >= %li AND nth < %li", 
-                   column, column, table, start + 1, end + 1); // 1-indexed
+                   column, table, column, start + 1, end + 1); // 1-indexed
     
     UFO_LOG("Executing %s\n", query);
     PGresult *result = PQexec(connection, query);
@@ -210,6 +210,11 @@ int retrieve_from_table(PGconn *connection, const char* table, const char* colum
 
 int update_table(PGconn *connection, const char* table, const char* column, const char* pk, uintptr_t start, uintptr_t end, psql_write write_action, const unsigned char *contents) {
     // TODO This could definitely have been implemented to be faster :/
+    int result = start_transaction(connection);
+    if (result != 0) {
+        return result;
+    }
+
     for (uintptr_t i = 0; i < end - start; i++) {
         char new_value[MAX_VALUE_SIZE];
         bool missing;
@@ -232,7 +237,7 @@ int update_table(PGconn *connection, const char* table, const char* column, cons
         UFO_LOG("Executing %s\n", query);
         PGresult *result = PQexec(connection, query);
 
-        if (PQresultStatus(result) != PGRES_TUPLES_OK) {
+        if (PQresultStatus(result) != PGRES_COMMAND_OK) {
             UFO_REPORT("UPDATE command failed: %s\n", PQerrorMessage(connection));
             PQclear(result);
             PQfinish(connection);
@@ -240,6 +245,11 @@ int update_table(PGconn *connection, const char* table, const char* column, cons
         }
 
         PQclear(result);
+    }
+
+    result = end_transaction(connection);
+    if (result != 0) {
+        return result;
     }
 
     return 0;

@@ -270,6 +270,7 @@ SEXP ufo_csv(SEXP/*STRSXP*/ path_sexp, SEXP/*LGLSXP*/ read_only_sexp, SEXP/*INTS
         ufo_source_t *source = (ufo_source_t *) malloc(sizeof(ufo_source_t));
 
         source->population_function = load_column_from_csv;
+        source->writeback_function = NULL;
         source->destructor_function = destroy_column;
         source->data = (void*) data;
         source->vector_type = token_type_to_ufo_type(csv_metadata->column_types[column]);
