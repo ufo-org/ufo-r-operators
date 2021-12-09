@@ -4,9 +4,9 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                //"/usr/include/linux/**",
-                "/opt/R-4.0.5/include/**",
-                "/opt/R-4.0.5/src/include/**"
+                "/opt/R-4.0.2/include/**",
+                "/opt/R-4.0.2/src/include/**",
+                "/usr/include/postgresql"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
@@ -14,6 +14,29 @@
             "cppStandard": "gnu++14",
             "intelliSenseMode": "linux-gcc-x64",
             "configurationProvider": "ms-vscode.cmake-tools"
+        },
+        {
+            "name": "Linux with R",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/opt/R-*/include/"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64"
+        },
+        {
+            "name": "Linux with psql",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64"
         }
     ],
     "version": 4

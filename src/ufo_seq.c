@@ -74,6 +74,7 @@ SEXP/*:result_type*/ ufo_seq(ufo_vector_type_t result_type, SEXP/*INTXP*/ from, 
     source->data = (void*) data;
 
     source->destructor_function = &destroy_data;
+    source->writeback_function = NULL;
 
     switch (result_type) {
     case UFO_INT:

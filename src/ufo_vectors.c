@@ -8,6 +8,7 @@
 #include <Rinternals.h>
 
 #include "../include/ufo_r/src/ufos.h"
+#include "../include/ufo_r/src/ufos_writeback.h"
 #include "ufo_vectors.h"
 #include "ufo_metadata.h"
 #include "helpers.h"
@@ -19,6 +20,7 @@
 int ufo_initialized = 0;
 
 void __destroy(void* user_data) {
+    REprintf("hellow __destroy\n");
     ufo_file_source_data_t *data = (ufo_file_source_data_t*) user_data;
     if (__get_debug_mode()) {
         REprintf("__destroy\n");
@@ -30,6 +32,18 @@ void __destroy(void* user_data) {
     fclose(data->file_handle);
     free((char *) data->path);
     free(data);
+}
+
+void __writeback(void* user_data, UfoWriteListenerEvent event) {
+    REprintf("hellow __writeback\n");
+
+    if (event.tag != Writeback) { return; }
+
+    uintptr_t start = event.writeback.start_idx;
+    uintptr_t end = event.writeback.end_idx;
+    const unsigned char *data = (const unsigned char *) event.writeback.data;
+
+    __write_to_file(user_data, start, end, data);
 }
 
 ufo_source_t* __make_source_or_die(ufo_vector_type_t type, const char *path, int *dimensions, size_t dimensions_length, bool read_only, int32_t min_load_count) {
@@ -45,6 +59,7 @@ ufo_source_t* __make_source_or_die(ufo_vector_type_t type, const char *path, int
     }
 
     source->population_function = &__load_from_file;
+    source->writeback_function = &__writeback;
     source->destructor_function = &__destroy;
     source->data = (void*) data;
     source->vector_type = type;

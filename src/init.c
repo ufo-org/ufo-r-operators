@@ -3,6 +3,10 @@
 #include "ufo_empty.h"
 #include "ufo_csv.h"
 #include "ufo_seq.h"
+#include "ufo_psql.h"
+#include "ufo_bz2.h"
+#include "ufo_write_protect.h"
+#include "ufo_bind.h"
 #include "ufo_operators.h"
 
 #include <R_ext/Rdynload.h>
@@ -40,11 +44,30 @@ static const R_CallMethodDef CallEntries[] = {
 	{"strsxp_empty",			(DL_FUNC) &ufo_strsxp_empty,				3},
 	{"vecsxp_empty",			(DL_FUNC) &ufo_vecsxp_empty,				2},
 
+    // Sequences
     {"intsxp_seq",				(DL_FUNC) &ufo_intsxp_seq,					5},
 	{"realsxp_seq",				(DL_FUNC) &ufo_realsxp_seq,					5},
+
+    // BZip2
+    {"intsxp_bzip2",            (DL_FUNC) &ufo_intsxp_bzip2,                3},
+    {"realsxp_bzip2",           (DL_FUNC) &ufo_realsxp_bzip2,               3},
+    {"rawsxp_bzip2",            (DL_FUNC) &ufo_rawsxp_bzip2,                3},
+    {"cplxsxp_bzip2",           (DL_FUNC) &ufo_cplxsxp_bzip2,               3},
+    {"lglsxp_bzip2",            (DL_FUNC) &ufo_lglsxp_bzip2,                3},
+    {"vecsxp_bzip2",            (DL_FUNC) &ufo_vecsxp_bzip2,                3},
+    {"strsxp_bzip2",            (DL_FUNC) &ufo_strsxp_bzip2,                3},
     
+    // Write protect
+    {"write_protect",           (DL_FUNC) &ufo_write_protect,               3},
+
+    // Bind multiple vectors
+    {"bind",					(DL_FUNC) &ufo_bind,						3},
+
     // CSV support
     {"csv",						(DL_FUNC) &ufo_csv,							6},
+
+    // PSQL column
+    {"psql",        			(DL_FUNC) &ufo_psql,						5},
 
     // Storage.
     {"store_bin",				(DL_FUNC) &ufo_store_bin,					2},

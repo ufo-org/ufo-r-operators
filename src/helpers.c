@@ -109,6 +109,31 @@ const char* __extract_path_or_die(SEXP/*STRSXP*/ path) {
     return ret;
 }
 
+const char* __extract_string_or_die(SEXP/*STRSXP*/ string) {
+    if (TYPEOF(string) != STRSXP) {
+        Rf_error("Invalid type for string vector: %s\n", type2char(TYPEOF(string)));
+    }
+
+    if (LENGTH(string) == 0) {
+        Rf_error("Provided a zero length string vector\n");
+    }
+
+    if (TYPEOF(STRING_ELT(string, 0)) != CHARSXP) {
+        Rf_error("Invalid type for string vector: %s\n", type2char(TYPEOF(STRING_ELT(string, 0))));
+    }
+
+    if (LENGTH(string) > 2) {
+        Rf_warning("Provided multiple string values, "
+                           "using the first one only\n");
+    }
+
+    // Copy string and return the copy.
+    const char *tmp = CHAR(STRING_ELT(string, 0));
+    char *ret = (char *) malloc(sizeof(char) * strlen(tmp));  // FIXME reclaim
+    strcpy(ret, tmp);
+    return ret;
+}
+
 int32_t __select_min_load_count(int32_t min_load_count, size_t element_size) {
 	if (min_load_count > 0) {
 		return min_load_count;
