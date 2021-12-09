@@ -5,6 +5,7 @@
 
 #include "../debug.h"
 
+#define MAX_VALUE_SIZE 50
 #define MAX_QUERY_SIZE 256
 
 PGconn *connect_to_database(const char *connection_info) {
@@ -92,6 +93,42 @@ psql_column_type_t psql_column_type_from(char* type) {
     return PSQL_COL_UNSUPPORTED;
 }
 
+// Assuming just one
+char *retrieve_table_pk(PGconn *connection, const char* table, const char* column) {
+    char query[MAX_QUERY_SIZE];
+    sprintf(query, "SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type "
+                   "FROM   pg_index i "
+                   "JOIN   pg_attribute a ON a.attrelid = i.indrelid "
+                   "                     AND a.attnum = ANY(i.indkey) "
+                   "WHERE  i.indrelid = '%s'::regclass "
+                   "AND    i.indisprimary;", table);
+
+    UFO_LOG("Executing %s\n", query);
+    PGresult *result = PQexec(connection, query);
+
+    if (PQresultStatus(result) != PGRES_TUPLES_OK) {
+        UFO_REPORT("Query failed (%s): %s\n", PQerrorMessage(connection), query);
+        PQclear(result);
+        PQfinish(connection);
+        return NULL;
+    }
+
+    int retrieved_rows = PQntuples(result);
+    if (retrieved_rows == 0) {
+        UFO_REPORT("Table %s has no PKs. UFOs need exactly one PK column to work.", table);
+        return NULL;
+    }
+    if (retrieved_rows > 1) {
+        UFO_REPORT("Table %s has %i PKs. UFOs need exactly one PK column to work.", table, retrieved_rows);
+        return NULL;
+    }
+
+    char *pk = strdup(PQgetvalue(result, 0, 0));
+    
+    PQclear(result);
+    return pk;  
+}
+
 int retrieve_type_of_column(PGconn *connection, const char* table, const char* column, psql_column_type_t *type) {
 
     char query[MAX_QUERY_SIZE];
@@ -115,10 +152,28 @@ int retrieve_type_of_column(PGconn *connection, const char* table, const char* c
     return 0;
 }
 
-int retrieve_from_table(PGconn *connection, const char* table, const char* column, uintptr_t start, uintptr_t end, psql_action action, unsigned char *target) {
-    char query[256];
-    sprintf(query, "SELECT %s FROM (SELECT row_number() OVER () nth, %s FROM %s) AS numbered "
-                   "WHERE numbered.nth >= %li AND numbered.nth < %li", 
+int create_table_column_subscript(PGconn *connection, const char* table, const char *pk, const char* column) {
+    char query[MAX_QUERY_SIZE];
+    sprintf(query, "CREATE OR REPLACE TEMPORARY VIEW ufo_%s_%s_subscript AS "
+                   "(SELECT row_number() OVER (ORDER BY %s) nth, %s, %s FROM %s)", 
+                   table, column, pk, pk, column, table); 
+    
+    UFO_LOG("Executing %s\n", query);
+    PGresult *result = PQexec(connection, query);
+
+    if (PQresultStatus(result) != PGRES_TUPLES_OK) {
+        UFO_REPORT("CREATE VIEW command failed: %s\n", PQerrorMessage(connection));
+        PQclear(result);
+        PQfinish(connection);
+        return 1;
+    }
+
+    return 0;
+}
+
+int retrieve_from_table(PGconn *connection, const char* table, const char* column, uintptr_t start, uintptr_t end, psql_read action, unsigned char *target) {
+    char query[MAX_QUERY_SIZE];
+    sprintf(query, "SELECT %s FROM ufo_%s_%s_subscript WHERE nth >= %li AND nth < %li", 
                    column, column, table, start + 1, end + 1); // 1-indexed
     
     UFO_LOG("Executing %s\n", query);
@@ -144,3 +199,37 @@ int retrieve_from_table(PGconn *connection, const char* table, const char* colum
     return 0;
 }
 
+int update_table(PGconn *connection, const char* table, const char* column, const char* pk, uintptr_t start, uintptr_t end, psql_write write_action, const unsigned char *contents) {
+    // TODO This could definitely have been implemented to be faster :/
+    for (uintptr_t i = 0; i < end - start; i++) {
+        char new_value[MAX_VALUE_SIZE];
+        bool missing;
+        int action_result = write_action(start + i, i, contents, new_value, &missing);
+        if (action_result != 0) {
+            return action_result;
+        }
+
+        char query[MAX_QUERY_SIZE];
+        if (missing) {
+            sprintf(query, "WITH subscript AS (SELECT %s, %s FROM ufo_%s_%s_subscript WHERE nth = %li) "
+                            "UPDATE %s SET %s = NULL FROM subscript WHERE league.%s = subscript.%s",
+                            pk, column, table, column, i, table, column, pk, pk);
+        } else {
+            sprintf(query, "WITH subscript AS (SELECT %s, %s FROM ufo_%s_%s_subscript WHERE nth = %li) "
+                            "UPDATE %s SET %s = '%s' FROM subscript WHERE league.%s = subscript.%s",
+                            pk, column, table, column, i, table, column, new_value, pk, pk);
+        }
+
+        UFO_LOG("Executing %s\n", query);
+        PGresult *result = PQexec(connection, query);
+
+        if (PQresultStatus(result) != PGRES_TUPLES_OK) {
+            UFO_REPORT("UPDATE command failed: %s\n", PQerrorMessage(connection));
+            PQclear(result);
+            PQfinish(connection);
+            return i + 1;
+        }
+    }
+    
+    return 0;
+}

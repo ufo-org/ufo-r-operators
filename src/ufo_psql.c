@@ -30,6 +30,7 @@ typedef struct {
     PGconn *database;
     const char *table;
     const char *column;
+    const char *pk;
 } psql_t;
 
 psql_t *psql_new(PGconn *database, const char *table, const char *column) {
@@ -37,12 +38,19 @@ psql_t *psql_new(PGconn *database, const char *table, const char *column) {
     psql->database = database;
     psql->table = strdup(table);
     psql->column = strdup(column);
+
+    psql->pk = retrieve_table_pk(database, table, column);
+    if (psql->pk == NULL) {
+        Rf_error("Cannot establish a PK for table \"%s\"\n", table);
+    }
+    
     return psql;
 }
 
 void psql_free(void *data) {
     psql_t *psql = (psql_t *) data;
     disconnect_from_database(psql->database);
+    free((void *) psql->pk);
     free((void *) psql->table);
     free((void *) psql->column);
     free(psql);
@@ -76,9 +84,10 @@ int logical_action(uintptr_t index_in_vector, int index_in_target, unsigned char
 }
 
 int raw_action(uintptr_t index_in_vector, int index_in_target, unsigned char *target, char *element, bool missing) {
-    UFO_REPORT("raw_action unimplemented");
-    return 1;  
+    ((Rbyte *) target)[index_in_target] = missing ? 0 : (Rbyte) strtol(element, NULL, 16);
+    return 0; 
 }
+
 
 int string_action(uintptr_t index_in_vector, int index_in_target, unsigned char *target, char *element, bool missing) {
     UFO_REPORT("string_action unimplemented");
@@ -106,15 +115,97 @@ int32_t strsxp_psql_populate(void* user_data, uintptr_t start, uintptr_t end, un
     return retrieve_from_table(psql->database, psql->table, psql->column, start, end, string_action, target);
 }
 
+// FIXME guard buffer from overflow
+int int_writeback(uintptr_t index_in_vector, int index_in_target, const unsigned char *data, char *buffer, bool *missing) {
+    int element = ((int *) data)[index_in_target];
+    (*missing) = (element == NA_INTEGER);
+    sprintf(buffer, "%i", element);
+    return 0;
+}
+
+int real_writeback(uintptr_t index_in_vector, int index_in_target, const unsigned char *data, char *buffer, bool *missing) {
+    double element = ((double *) data)[index_in_target];
+    (*missing) = ISNAN(element);
+    sprintf(buffer, "%f", element);
+    return 0;
+}
+
+int logical_writeback(uintptr_t index_in_vector, int index_in_target, const unsigned char *data, char *buffer, bool *missing) {
+    Rboolean element = ((Rboolean *) data)[index_in_target];
+    (*missing) = (element == NA_LOGICAL);
+    sprintf(buffer, "%s", element == TRUE ? "TRUE" : "FALSE");
+    return 0;
+}
+
+int raw_writeback(uintptr_t index_in_vector, int index_in_target, const unsigned char *data, char *buffer, bool *missing) {
+    Rbyte element = ((Rbyte *) data)[index_in_target];
+    (*missing) = false;
+    sprintf(buffer, "%x", element);
+    return 0;
+}
+
+int string_writeback(uintptr_t index_in_vector, int index_in_target, const unsigned char *data, char *buffer, bool *missing) {
+    UFO_REPORT("string_writeback unimplemented");
+    return 1;  
+}
+
 void intsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
     psql_t *psql = (psql_t *) user_data;
-    //return retrieve_from_table(psql->database, psql->table, psql->column, start, end, int_action, target);
     if (event.tag == Reset) { return; }
 
     uintptr_t start = event.writeback.start_idx;
     uintptr_t end = event.writeback.end_idx;
-    const int *data = (const int *) event.writeback.data;
+    const unsigned char *data = (const unsigned char *) event.writeback.data;
 
+    update_table(psql->database, psql->table, psql->column, psql->pk, start, end, int_writeback, data);
+    return;
+}
+
+void lglsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
+    psql_t *psql = (psql_t *) user_data;
+    if (event.tag == Reset) { return; }
+
+    uintptr_t start = event.writeback.start_idx;
+    uintptr_t end = event.writeback.end_idx;
+    const unsigned char *data = (const unsigned char *) event.writeback.data;
+
+    update_table(psql->database, psql->table, psql->column, psql->pk, start, end, logical_writeback, data);
+    return;
+}
+
+void rawsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
+    psql_t *psql = (psql_t *) user_data;
+    if (event.tag == Reset) { return; }
+
+    uintptr_t start = event.writeback.start_idx;
+    uintptr_t end = event.writeback.end_idx;
+    const unsigned char *data = (const unsigned char *) event.writeback.data;
+
+    update_table(psql->database, psql->table, psql->column, psql->pk, start, end, raw_writeback, data);
+    return;
+}
+
+void realsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
+    psql_t *psql = (psql_t *) user_data;
+    if (event.tag == Reset) { return; }
+
+    uintptr_t start = event.writeback.start_idx;
+    uintptr_t end = event.writeback.end_idx;
+    const unsigned char *data = (const unsigned char *) event.writeback.data;
+
+    update_table(psql->database, psql->table, psql->column, psql->pk, start, end, real_writeback, data);
+    return;
+}
+
+void strsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
+    psql_t *psql = (psql_t *) user_data;
+    if (event.tag == Reset) { return; }
+
+    uintptr_t start = event.writeback.start_idx;
+    uintptr_t end = event.writeback.end_idx;
+    const unsigned char *data = (const unsigned char *) event.writeback.data;
+
+    update_table(psql->database, psql->table, psql->column, psql->pk, start, end, string_writeback, data);
     return;
 }
 
@@ -156,20 +247,35 @@ SEXP ufo_psql(SEXP/*STRSXP*/ db, SEXP/*STRSXP*/ table, SEXP/*STRSXP*/ column, SE
     source->vector_type = vector_type;
     source->element_size = __get_element_size(vector_type);
      
-        // Behavior specification
+    // Behavior specification
     source->data = psql_new(database, table_value, column_value);
     source->destructor_function = psql_free;
     
     switch (vector_type) {
+    case UFO_REAL: 
+        source->population_function = realsxp_psql_populate; 
+        source->writeback_function = realsxp_psql_writeback; 
+        break;        
+    case UFO_LGL:
+        source->population_function = lglsxp_psql_populate;
+        source->writeback_function = lglsxp_psql_writeback;
+        break;
+    case UFO_INT:  
+        source->population_function = intsxp_psql_populate;  
+        source->writeback_function = intsxp_psql_writeback;  
+        break;
+    case UFO_RAW:  
+        source->population_function = rawsxp_psql_populate;  
+        source->writeback_function = rawsxp_psql_writeback;  
+        break;
+    case UFO_STR:  
+        source->population_function = strsxp_psql_populate;
+        source->writeback_function = strsxp_psql_writeback;
+        break;
         // case UFO_CHAR: source->population_function = charsxp_psql_populate; break;
-        case UFO_REAL: source->population_function = realsxp_psql_populate; break;
         // case UFO_CPLX: source->population_function = cplxsxp_psql_populate; break;
-        case UFO_LGL:  source->population_function = lglsxp_psql_populate;  break;
-        case UFO_INT:  source->population_function = intsxp_psql_populate;  break;
-        case UFO_RAW:  source->population_function = rawsxp_psql_populate;  break;
-        case UFO_STR:  source->population_function = strsxp_psql_populate;  break;
         // case UFO_VEC:  source->population_function = vecsxp_psql_populate;  break;    
-        default: Rf_error("Unsupported UFO type: %s", type2char(vector_type));
+    default: Rf_error("Unsupported UFO type: %s", type2char(vector_type));
     }
 
     // Chunk-related parameters
