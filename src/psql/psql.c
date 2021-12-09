@@ -116,10 +116,14 @@ char *retrieve_table_pk(PGconn *connection, const char* table, const char* colum
     int retrieved_rows = PQntuples(result);
     if (retrieved_rows == 0) {
         UFO_REPORT("Table %s has no PKs. UFOs need exactly one PK column to work.", table);
+        PQclear(result);
+        PQfinish(connection);
         return NULL;
     }
     if (retrieved_rows > 1) {
         UFO_REPORT("Table %s has %i PKs. UFOs need exactly one PK column to work.", table, retrieved_rows);
+        PQclear(result);
+        PQfinish(connection);
         return NULL;
     }
 
@@ -154,15 +158,15 @@ int retrieve_type_of_column(PGconn *connection, const char* table, const char* c
 
 int create_table_column_subscript(PGconn *connection, const char* table, const char *pk, const char* column) {
     char query[MAX_QUERY_SIZE];
-    sprintf(query, "CREATE OR REPLACE VIEW ufo_%s_%s_subscript AS "
-                   "(SELECT row_number() OVER (ORDER BY %s) nth, %s, %s FROM %s);", 
+    sprintf(query, "CREATE OR REPLACE VIEW \"ufo_%s_%s_subscript\" AS "
+                   "(SELECT row_number() OVER (ORDER BY %s) nth, %s, %s FROM %s)", 
                    table, column, pk, pk, column, table); 
     
     UFO_LOG("Executing %s\n", query);
     PGresult *result = PQexec(connection, query);
 
     if (PQresultStatus(result) != PGRES_TUPLES_OK) {
-        UFO_REPORT("CREATE VIEW command failed: %s (%s)\n", PQresultErrorMessage(result), query);
+        UFO_REPORT("CREATE VIEW command failed: '%s' (%s)\n", PQresultErrorMessage(result), query);
         PQclear(result);
         PQfinish(connection);
         return 1;
