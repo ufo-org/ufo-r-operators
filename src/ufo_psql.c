@@ -187,7 +187,7 @@ int string_writeback(uintptr_t index_in_vector, int index_in_target, const unsig
 
 void intsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
     psql_t *psql = (psql_t *) user_data;
-    if (event.tag == Reset) { return; }
+    if (event.tag != Writeback) { return; }
 
     uintptr_t start = event.writeback.start_idx;
     uintptr_t end = event.writeback.end_idx;
@@ -199,7 +199,7 @@ void intsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
 
 void lglsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
     psql_t *psql = (psql_t *) user_data;
-    if (event.tag == Reset) { return; }
+    if (event.tag != Writeback) { return; }
 
     uintptr_t start = event.writeback.start_idx;
     uintptr_t end = event.writeback.end_idx;
@@ -211,7 +211,7 @@ void lglsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
 
 void rawsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
     psql_t *psql = (psql_t *) user_data;
-    if (event.tag == Reset) { return; }
+    if (event.tag != Writeback) { return; }
 
     uintptr_t start = event.writeback.start_idx;
     uintptr_t end = event.writeback.end_idx;
@@ -223,7 +223,7 @@ void rawsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
 
 void realsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
     psql_t *psql = (psql_t *) user_data;
-    if (event.tag == Reset) { return; }
+    if (event.tag != Writeback) { return; }
 
     uintptr_t start = event.writeback.start_idx;
     uintptr_t end = event.writeback.end_idx;
@@ -235,7 +235,7 @@ void realsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
 
 void strsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
     psql_t *psql = (psql_t *) user_data;
-    if (event.tag == Reset) { return; }
+    if (event.tag != Writeback) { return; }
 
     uintptr_t start = event.writeback.start_idx;
     uintptr_t end = event.writeback.end_idx;

@@ -8,6 +8,9 @@
 #include "../debug.h"
 
 #include <stdint.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 int32_t __load_from_file(void* user_data, uintptr_t start, uintptr_t end, unsigned char* target) {
 
@@ -79,10 +82,19 @@ int32_t __write_to_file(void* user_data, uintptr_t start, uintptr_t end, const u
         REprintf("   element size: %li\n", cfg->element_size);
     }
 
+    // TODO redo as mmap
+    // size_t size = cfg->element_size * cfg->vector_size;
+    // int fd = open(cfg->path, O_RDWR);
+    // unsigned char* file = (unsigned char *) mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    // memcpy(file + (start * cfg->element_size), contents, (end - start) * cfg->element_size);
+    // close(fd);
+    // munmap(file, size);
+
+    // return 0;
+
     // Open for writing, do not reuse the file handle
-    FILE* file = fopen(cfg->path, "wb");
-        if (!file) {
-        fclose(file);
+    FILE* file = fopen(cfg->path, "r+b");
+    if (!file) {        
         REprintf("Error opening file '%s' for writing.", cfg->path); // FIXME change to UFO_LOG and UFO_REPORT
         return -1;
     }
@@ -99,14 +111,14 @@ int32_t __write_to_file(void* user_data, uintptr_t start, uintptr_t end, const u
     long start_writing_from = cfg->element_size * start;
     if (start_writing_from > file_size_in_bytes) {
         // Start index out of bounds of the file.
-        REprintf("Start index out of bounds of the file.\n");
+        REprintf("Start index %li out of bounds of the file %li.\n", start_writing_from, file_size_in_bytes);
         return 42;
     }
 
     long end_writing_at = cfg->element_size * end;
     if (end_writing_at > file_size_in_bytes) {
         // End index out of bounds of the file.
-        REprintf("End index out of bounds of the file.\n");
+        REprintf("End index %li out of bounds of the file %li.\n", end_writing_at, file_size_in_bytes);
         return 43;
     }
 
@@ -117,7 +129,7 @@ int32_t __write_to_file(void* user_data, uintptr_t start, uintptr_t end, const u
         return 2;
     }
 
-    size_t write_status = fwrite(contents, sizeof(const char), end - start, file);
+    size_t write_status = fwrite(contents, cfg->element_size, end - start, file);
     if (write_status < end - start || write_status == 0) {
         fclose(file);
         REprintf("Error writing to file '%s'. Written: %i out of %li",
@@ -125,6 +137,7 @@ int32_t __write_to_file(void* user_data, uintptr_t start, uintptr_t end, const u
         return 666;
     }
 
+    fclose(file);
     return 0;
 }
 

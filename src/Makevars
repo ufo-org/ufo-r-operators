@@ -7,10 +7,10 @@ else
 	PKG_CFLAGS = -DUSE_R_STUFF -DSAFETY_FIRST -O2       -Wall -Werror -Iinclude
 endif
 
-ifeq (${UFO_PSQL}, 1)
-    PKG_CFLAGS += -I/usr/include/postgresql
-    PKG_LIBS += -lpq
-endif
+#ifeq (${UFO_PSQL}, 1)
+PKG_CFLAGS += -I/usr/include/postgresql
+PKG_LIBS += -lpq
+#endif
 
 # TODO remove SAFETY_FIRST unless debug
 

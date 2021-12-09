@@ -20,6 +20,7 @@
 int ufo_initialized = 0;
 
 void __destroy(void* user_data) {
+    REprintf("hellow __destroy\n");
     ufo_file_source_data_t *data = (ufo_file_source_data_t*) user_data;
     if (__get_debug_mode()) {
         REprintf("__destroy\n");
@@ -34,7 +35,9 @@ void __destroy(void* user_data) {
 }
 
 void __writeback(void* user_data, UfoWriteListenerEvent event) {
-    if (event.tag == Reset) { return; }
+    REprintf("hellow __writeback\n");
+
+    if (event.tag != Writeback) { return; }
 
     uintptr_t start = event.writeback.start_idx;
     uintptr_t end = event.writeback.end_idx;
