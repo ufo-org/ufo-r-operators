@@ -3,6 +3,7 @@
 #include "ufo_empty.h"
 #include "ufo_csv.h"
 #include "ufo_seq.h"
+#include "ufo_psql.h"
 #include "ufo_bz2.h"
 #include "ufo_write_protect.h"
 #include "ufo_bind.h"
@@ -64,6 +65,9 @@ static const R_CallMethodDef CallEntries[] = {
 
     // CSV support
     {"csv",						(DL_FUNC) &ufo_csv,							6},
+
+    // PSQL column
+    {"psql",        			(DL_FUNC) &ufo_psql,						5},
 
     // Storage.
     {"store_bin",				(DL_FUNC) &ufo_store_bin,					2},

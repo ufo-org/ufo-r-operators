@@ -55,7 +55,7 @@ int end_transaction(PGconn *connection) {
 int retrieve_size_of_table(PGconn *connection, const char* table, size_t* count_return) {
 
     char query[MAX_QUERY_SIZE];
-    sprintf(query, "SELECT count(*) FROM '%s'", table);
+    sprintf(query, "SELECT count(*) FROM %s", table);
     UFO_LOG("Executing %s\n", query);
     PGresult *result = PQexec(connection, query);
 
@@ -154,20 +154,21 @@ int retrieve_type_of_column(PGconn *connection, const char* table, const char* c
 
 int create_table_column_subscript(PGconn *connection, const char* table, const char *pk, const char* column) {
     char query[MAX_QUERY_SIZE];
-    sprintf(query, "CREATE OR REPLACE TEMPORARY VIEW ufo_%s_%s_subscript AS "
-                   "(SELECT row_number() OVER (ORDER BY %s) nth, %s, %s FROM %s)", 
+    sprintf(query, "CREATE OR REPLACE VIEW ufo_%s_%s_subscript AS "
+                   "(SELECT row_number() OVER (ORDER BY %s) nth, %s, %s FROM %s);", 
                    table, column, pk, pk, column, table); 
     
     UFO_LOG("Executing %s\n", query);
     PGresult *result = PQexec(connection, query);
 
     if (PQresultStatus(result) != PGRES_TUPLES_OK) {
-        UFO_REPORT("CREATE VIEW command failed: %s\n", PQerrorMessage(connection));
+        UFO_REPORT("CREATE VIEW command failed: %s (%s)\n", PQresultErrorMessage(result), query);
         PQclear(result);
         PQfinish(connection);
         return 1;
     }
 
+    PQclear(result);
     return 0;
 }
 
@@ -191,11 +192,15 @@ int retrieve_from_table(PGconn *connection, const char* table, const char* colum
         char *element = PQgetvalue(result, i, 0);
         UFO_LOG("Loading object %i: %s\n", i, element);
         bool missing = PQgetisnull(result, i,0) == 1;
-        int result = action(start + i, i, target, element, missing);
-        if (result != 0) {
-            return result;
+        int action_result = action(start + i, i, target, element, missing);
+        if (action_result != 0) {
+            PQclear(result);
+            PQfinish(connection);
+            return action_result;
         }
     }
+
+    PQclear(result);
     return 0;
 }
 
@@ -229,7 +234,9 @@ int update_table(PGconn *connection, const char* table, const char* column, cons
             PQfinish(connection);
             return i + 1;
         }
+
+        PQclear(result);
     }
-    
+
     return 0;
 }

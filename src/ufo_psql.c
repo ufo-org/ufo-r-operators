@@ -39,9 +39,24 @@ psql_t *psql_new(PGconn *database, const char *table, const char *column) {
     psql->table = strdup(table);
     psql->column = strdup(column);
 
+    int result = start_transaction(database);
+    if (result != 0) {
+        Rf_error("Cannot start transaction\n");
+    }
+
     psql->pk = retrieve_table_pk(database, table, column);
     if (psql->pk == NULL) {
         Rf_error("Cannot establish a PK for table \"%s\"\n", table);
+    }
+
+    result = create_table_column_subscript(database, table, psql->pk, column);
+    if (result != 0) {
+        Rf_error("Cannot create an auxiliary view for table \"%s\"\n", table);
+    }
+
+    result = end_transaction(database);
+    if (result != 0) {
+        Rf_error("Cannot commit transaction\n");
     }
     
     return psql;
