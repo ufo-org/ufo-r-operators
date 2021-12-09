@@ -153,7 +153,9 @@ int32_t strsxp_psql_populate(void* user_data, uintptr_t start, uintptr_t end, un
 
 // FIXME guard buffer from overflow
 int int_writeback(uintptr_t index_in_vector, int index_in_target, const unsigned char *data, char *buffer, bool *missing) {
+    printf("index_in_vector %li index in target %i\n", index_in_vector, index_in_target);
     int element = ((int *) data)[index_in_target];
+    printf("element %i\n", element);
     (*missing) = (element == NA_INTEGER);
     sprintf(buffer, "%i", element);
     return 0;

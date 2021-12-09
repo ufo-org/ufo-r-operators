@@ -163,7 +163,7 @@ int retrieve_type_of_column(PGconn *connection, const char* table, const char* c
 int create_table_column_subscript(PGconn *connection, const char* table, const char *pk, const char* column) {
     char query[MAX_QUERY_SIZE];
     sprintf(query, "CREATE OR REPLACE VIEW \"ufo_%s_%s_subscript\" AS "
-                   "(SELECT row_number() OVER (ORDER BY %s) nth, %s, %s FROM %s)", 
+                   "(SELECT row_number() OVER (ORDER BY %s) - 1 nth, %s, %s FROM %s)", 
                    table, column, pk, pk, column, table); 
     
     UFO_LOG("Executing %s\n", query);
@@ -183,7 +183,7 @@ int create_table_column_subscript(PGconn *connection, const char* table, const c
 int retrieve_from_table(PGconn *connection, const char* table, const char* column, uintptr_t start, uintptr_t end, psql_read action, unsigned char *target) {
     char query[MAX_QUERY_SIZE];
     sprintf(query, "SELECT %s FROM ufo_%s_%s_subscript WHERE nth >= %li AND nth < %li", 
-                   column, table, column, start + 1, end + 1); // 1-indexed
+                   column, table, column, start, end); // 0-indexed
     
     UFO_LOG("Executing %s\n", query);
     PGresult *result = PQexec(connection, query);
@@ -230,12 +230,12 @@ int update_table(PGconn *connection, const char* table, const char* column, cons
         char query[MAX_QUERY_SIZE];
         if (missing) {
             sprintf(query, "WITH subscript AS (SELECT %s, %s FROM ufo_%s_%s_subscript WHERE nth = %li) "
-                            "UPDATE %s SET %s = NULL FROM subscript WHERE league.%s = subscript.%s",
-                            pk, column, table, column, i, table, column, pk, pk);
+                            "UPDATE %s SET %s = NULL FROM subscript WHERE %s.%s = subscript.%s",
+                            pk, column, table, column, i, table, column, table, pk, pk);
         } else {
             sprintf(query, "WITH subscript AS (SELECT %s, %s FROM ufo_%s_%s_subscript WHERE nth = %li) "
-                            "UPDATE %s SET %s = '%s' FROM subscript WHERE league.%s = subscript.%s",
-                            pk, column, table, column, i, table, column, new_value, pk, pk);
+                            "UPDATE %s SET %s = '%s' FROM subscript WHERE %s.%s = subscript.%s",
+                            pk, column, table, column, i, table, column, new_value, table, pk, pk);
         }
 
         UFO_LOG("Executing %s\n", query);
