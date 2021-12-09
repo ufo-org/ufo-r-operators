@@ -19,7 +19,7 @@ string_vector_t *string_vector_new(size_t initial_size) {
     return vector;
 }
 
-int string_vector_append(string_vector_t * vector, char *string) {
+int string_vector_append(string_vector_t *vector, char *string) {
     if (vector->size == vector->allocated) {
         vector->allocated += (vector->allocated >> 1);
         vector->strings = (char **) realloc(vector->strings, sizeof(char *) * vector->allocated);

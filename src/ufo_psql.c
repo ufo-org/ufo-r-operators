@@ -7,13 +7,18 @@
 
 #include "debug.h"
 #include "helpers.h"
-
+#include "../include/ufo_r/src/bad_strings.h"
 #include "../include/ufo_r/src/ufos_writeback.h"
+
+#include <R.h>
+#define USE_RINTERNALS
+#include <Rinternals.h>
 
 // select name from (select row_number() over () nth, name from league) as numbered where numbered.nth = 999
 // select column_name, data_type from information_schema.columns where table_name = 'league'
 
 ufo_vector_type_t psql_type_to_vector_type(psql_column_type_t type) {
+    // printf("PSQL TYPE %i\n", type);
     switch (type) {
         case PSQL_COL_INT: return UFO_INT;
         case PSQL_COL_REAL: return UFO_REAL;
@@ -73,17 +78,20 @@ void psql_free(void *data) {
 }
 
 int int_action(uintptr_t index_in_vector, int index_in_target, unsigned char *target, char *element, bool missing) {
+    // printf("INT %s\n", element);
     ((int *) target)[index_in_target] = missing ? NA_INTEGER : atoi(element);
     return 0;
 }
 
 int real_action(uintptr_t index_in_vector, int index_in_target, unsigned char *target, char *element, bool missing) {
+    // printf("REAL %s\n", element);
     char *remainder;
     ((double *) target)[index_in_target] = missing ? NA_REAL : strtod(element, &remainder);
     return 0;
 }
 
 int logical_action(uintptr_t index_in_vector, int index_in_target, unsigned char *target, char *element, bool missing) {
+    // printf("LGL %s\n", element);
     Rboolean value;
     if (missing) {
         value = NA_LOGICAL;
@@ -99,15 +107,27 @@ int logical_action(uintptr_t index_in_vector, int index_in_target, unsigned char
     return 0;
 }
 
+// This doesn't work.
 int raw_action(uintptr_t index_in_vector, int index_in_target, unsigned char *target, char *element, bool missing) {
     ((Rbyte *) target)[index_in_target] = missing ? 0 : (Rbyte) strtol(element, NULL, 16);
     return 0; 
 }
 
-
+// It depends on interned strings, so this is not good.
 int string_action(uintptr_t index_in_vector, int index_in_target, unsigned char *target, char *element, bool missing) {
     UFO_REPORT("string_action unimplemented");
-    return 1;  
+    return 1;
+    // printf("STR %s\n", element);
+    // SEXP/*CHARSXP*/ bad_string;
+    // //UFO_REPORT("string_action unimplemented");
+    // R_len_t size = strlen(element);
+    // PROTECT(bad_string = allocVector(73, size));
+    // memcpy(DATAPTR(bad_string), element, size);
+    // // SET_ASCII(bad_string);                                // FIXME
+    // UNPROTECT(1);
+
+    // ((SEXP *) target)[index_in_target] = missing ? R_NaString : bad_string;
+    // return 0;  
 }
 
 int32_t intsxp_psql_populate(void* user_data, uintptr_t start, uintptr_t end, unsigned char* target) {
@@ -161,13 +181,11 @@ int raw_writeback(uintptr_t index_in_vector, int index_in_target, const unsigned
 }
 
 int string_writeback(uintptr_t index_in_vector, int index_in_target, const unsigned char *data, char *buffer, bool *missing) {
-    UFO_REPORT("string_writeback unimplemented");
+    //UFO_REPORT("string_writeback unimplemented");
     return 1;  
 }
 
 void intsxp_psql_writeback(void* user_data, UfoWriteListenerEvent event) {
-    REprintf("intsxp_psql_writeback\n");
-
     psql_t *psql = (psql_t *) user_data;
     if (event.tag == Reset) { return; }
 

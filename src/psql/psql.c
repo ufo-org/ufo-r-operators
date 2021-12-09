@@ -75,19 +75,23 @@ int retrieve_size_of_table(PGconn *connection, const char* table, size_t* count_
 
 psql_column_type_t psql_column_type_from(char* type) {
 
-    if (strcmp(type, "integer"))           return PSQL_COL_INT;
-    if (strcmp(type, "smallint"))          return PSQL_COL_INT;
-    if (strcmp(type, "smallint"))          return PSQL_COL_INT;
+    // printf("type=%s\n",type);
 
-    if (strcmp(type, "bool"))              return PSQL_COL_BOOL;
+    if (strcmp(type, "integer") == 0)           return PSQL_COL_INT;
+    if (strcmp(type, "smallint") == 0)          return PSQL_COL_INT;
+    if (strcmp(type, "smallint") == 0)          return PSQL_COL_INT;
 
-    if (strcmp(type, "character"))         return PSQL_COL_CHAR;
-    if (strcmp(type, "character varying")) return PSQL_COL_CHAR;    
-    if (strcmp(type, "text"))              return PSQL_COL_CHAR;
+    if (strcmp(type, "bool") == 0)              return PSQL_COL_BOOL;
+    if (strcmp(type, "boolean") == 0)           return PSQL_COL_BOOL;
 
-    if (strcmp(type, "real"))              return PSQL_COL_REAL;
+    if (strcmp(type, "character") == 0)         return PSQL_COL_CHAR;
+    if (strcmp(type, "character varying") == 0) return PSQL_COL_CHAR;    
+    if (strcmp(type, "text") == 0)              return PSQL_COL_CHAR;
 
-    if (strcmp(type, "bytea"))             return PSQL_COL_BYTE;
+    if (strcmp(type, "real") == 0)              return PSQL_COL_REAL;
+
+    //since it's not a single byte, i can;t really parse it.
+    //if (strcmp(type, "bytea") == 0)             return PSQL_COL_BYTE;
 
     UFO_REPORT("Unsupported column type: %s", type);
     return PSQL_COL_UNSUPPORTED;
