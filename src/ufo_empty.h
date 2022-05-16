@@ -7,7 +7,7 @@
 #include <Rinternals.h>
 
 #include "../include/ufo_r/src/ufos.h"
-#include "ufo_metadata.h"
+
 #include "helpers.h"
 #include "debug.h"
 

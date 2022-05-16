@@ -1,13 +1,10 @@
-Package: ufovectors
+Package: ufooperators
 Type: Package
-Title: Implementation of R vectors using UserFault Objects
-Description: Example implementation of R vectors using UserFault Objects to
-             materialize data on demand from file sources.
+Title: Operator overloads for UFO vectors
+Description: Quality of life operator overloads for UFO vectors, including modification in place.
 Version: 0.1.0
 Author:      Konrad Siek <siekkonr@fit.cvut.cz> 
-Authors@R: c(person(given = "Colette", family = "Kerr", role = c("aut"),
-                    email = "colette.m.y.kerr@gmail.com"),
-             person(given = "Konrad",  family = "Siek", role = c("aut", "cre"),
+Authors@R: c(person(given = "Konrad",  family = "Siek", role = c("aut", "cre"),
                     email = "siekkonr@fit.cvut.cz"))
 Maintainer: Konrad Siek <siekkonr@fit.cvut.cz>
 License: GPL-2 | GPL-3
