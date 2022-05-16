@@ -1,3 +1,12 @@
+.add_class <- function(vector, cls, add_class, preserve_previous = TRUE) {
+  if(add_class) {
+    class(vector) <- if(preserve_previous) c(cls, attr(vector, "class")) else cls
+  }
+  return(vector)
+}
+
+.check_add_class <- function () isTRUE(getOption("ufovectors.add_class"))
+
 #-----------------------------------------------------------------------------
 # Custom operators implementation: perform operations by chunks
 #-----------------------------------------------------------------------------
@@ -240,24 +249,24 @@ ufo_apply <- function(FUN, ..., MoreArgs = NULL, USE.NAMES = TRUE, chunk_size=10
 # Poor workaround of the commented out code below
 overload_operators <- function() {
   operator_overload_statements <- c(
-    "`+`  <- ufovectors:::ufo_add",
-    "`-`  <- ufovectors:::ufo_subtract",
-    "`*`  <- ufovectors:::ufo_multiply",
-    "`/`  <- ufovectors:::ufo_divide",
-    "`^`  <- ufovectors:::ufo_power",
-    "`%%` <- ufovectors:::ufo_modulo",
-    "`%/%`<- ufovectors:::ufo_int_divide",
-    "`<`  <- ufovectors:::ufo_less",
-    "`<=` <- ufovectors:::ufo_less_equal",
-    "`>`  <- ufovectors:::ufo_greater",
-    "`>=` <- ufovectors:::ufo_greater_equal",
-    "`==` <- ufovectors:::ufo_equal",
-    "`!=` <- ufovectors:::ufo_unequal",
-    "`!`  <- ufovectors:::ufo_not",
-    "`|`  <- ufovectors:::ufo_or",
-    "`&`  <- ufovectors:::ufo_and"
-    #"`[` <- ufovectors:::ufo_subset",
-    #"`[<-` <- ufovectors:::ufo_subset_assign"
+    "`+`  <- ufooperators:::ufo_add",
+    "`-`  <- ufooperators:::ufo_subtract",
+    "`*`  <- ufooperators:::ufo_multiply",
+    "`/`  <- ufooperators:::ufo_divide",
+    "`^`  <- ufooperators:::ufo_power",
+    "`%%` <- ufooperators:::ufo_modulo",
+    "`%/%`<- ufooperators:::ufo_int_divide",
+    "`<`  <- ufooperators:::ufo_less",
+    "`<=` <- ufooperators:::ufo_less_equal",
+    "`>`  <- ufooperators:::ufo_greater",
+    "`>=` <- ufooperators:::ufo_greater_equal",
+    "`==` <- ufooperators:::ufo_equal",
+    "`!=` <- ufooperators:::ufo_unequal",
+    "`!`  <- ufooperators:::ufo_not",
+    "`|`  <- ufooperators:::ufo_or",
+    "`&`  <- ufooperators:::ufo_and"
+    #"`[` <- ufooperators:::ufo_subset",
+    #"`[<-` <- ufooperators:::ufo_subset_assign"
   )
 
   eval(parse(text = operator_overload_statements), envir = globalenv())
@@ -265,57 +274,57 @@ overload_operators <- function() {
 
 unload_operators <- function() {
   operator_overload_statements <- c(
-    "`+`   <- ufovectors:::.base_add",
-    "`-`   <- ufovectors:::.base_subtract",
-    "`*`   <- ufovectors:::.base_multiply",
-    "`/`   <- ufovectors:::.base_divide",
-    "`^`   <- ufovectors:::.base_power",
-    "`%%`  <- ufovectors:::.base_modulo",
-    "`%/%` <- ufovectors:::.base_int_divide",
-    "`<`   <- ufovectors:::.base_less",
-    "`<=`  <- ufovectors:::.base_less_equal",
-    "`>`   <- ufovectors:::.base_greater",
-    "`>=`  <- ufovectors:::.base_greater_equal",
-    "`==`  <- ufovectors:::.base_equal",
-    "`!=`  <- ufovectors:::.base_unequal",
-    "`!`   <- ufovectors:::.base_not",
-    "`|`   <- ufovectors:::.base_or",
-    "`&`   <- ufovectors:::.base_and"
-    #"`[` <- ufovectors:::.base_subset",
-    #"`[<-`	<- ufovectors:::.base_subset_assign"
+    "`+`   <- ufooperators:::.base_add",
+    "`-`   <- ufooperators:::.base_subtract",
+    "`*`   <- ufooperators:::.base_multiply",
+    "`/`   <- ufooperators:::.base_divide",
+    "`^`   <- ufooperators:::.base_power",
+    "`%%`  <- ufooperators:::.base_modulo",
+    "`%/%` <- ufooperators:::.base_int_divide",
+    "`<`   <- ufooperators:::.base_less",
+    "`<=`  <- ufooperators:::.base_less_equal",
+    "`>`   <- ufooperators:::.base_greater",
+    "`>=`  <- ufooperators:::.base_greater_equal",
+    "`==`  <- ufooperators:::.base_equal",
+    "`!=`  <- ufooperators:::.base_unequal",
+    "`!`   <- ufooperators:::.base_not",
+    "`|`   <- ufooperators:::.base_or",
+    "`&`   <- ufooperators:::.base_and"
+    #"`[` <- ufooperators:::.base_subset",
+    #"`[<-`	<- ufooperators:::.base_subset_assign"
   )
 
   eval(parse(text=operator_overload_statements), envir=globalenv())
 }
 
-# options(ufovectors.add_class = TRUE)
-# options(ufovectors.overload_operators = TRUE)
+# options(ufos.add_class = TRUE)
+# options(ufos.overload_operators = TRUE)
 .onLoad <- function(...) {
-  if (isTRUE(getOption("ufovectors.add_class"))) {
+  if (isTRUE(getOption("ufos.add_class"))) {
     write("Creating S3 methods for UFO vectors\n", stderr())
-    registerS3method("+",   "ufo", ufovectors:::ufo_add)
-    registerS3method("-",   "ufo", ufovectors:::ufo_subtract)
-    registerS3method("*",   "ufo", ufovectors:::ufo_multiply)
-    registerS3method("/",   "ufo", ufovectors:::ufo_divide)
-    registerS3method("^",   "ufo", ufovectors:::ufo_power)
-    registerS3method("%%",  "ufo", ufovectors:::ufo_modulo)
-    registerS3method("%/%", "ufo", ufovectors:::ufo_int_divide)
-    registerS3method("<",   "ufo", ufovectors:::ufo_less)
-    registerS3method("<=",  "ufo", ufovectors:::ufo_less_equal)
-    registerS3method(">",   "ufo", ufovectors:::ufo_greater)
-    registerS3method(">=",  "ufo", ufovectors:::ufo_greater_equal)
-    registerS3method("==",  "ufo", ufovectors:::ufo_equal)
-    registerS3method("!=",  "ufo", ufovectors:::ufo_unequal)
-    registerS3method("!",   "ufo", ufovectors:::ufo_not)
-    registerS3method("|",   "ufo", ufovectors:::ufo_or)
-    registerS3method("&",   "ufo", ufovectors:::ufo_and)
-    registerS3method("[",   "ufo", ufovectors:::ufo_subset)
-    #registerS3method("[<-", "ufo", ufovectors:::ufo_subset_assign)	
+    registerS3method("+",   "ufo", ufooperators:::ufo_add)
+    registerS3method("-",   "ufo", ufooperators:::ufo_subtract)
+    registerS3method("*",   "ufo", ufooperators:::ufo_multiply)
+    registerS3method("/",   "ufo", ufooperators:::ufo_divide)
+    registerS3method("^",   "ufo", ufooperators:::ufo_power)
+    registerS3method("%%",  "ufo", ufooperators:::ufo_modulo)
+    registerS3method("%/%", "ufo", ufooperators:::ufo_int_divide)
+    registerS3method("<",   "ufo", ufooperators:::ufo_less)
+    registerS3method("<=",  "ufo", ufooperators:::ufo_less_equal)
+    registerS3method(">",   "ufo", ufooperators:::ufo_greater)
+    registerS3method(">=",  "ufo", ufooperators:::ufo_greater_equal)
+    registerS3method("==",  "ufo", ufooperators:::ufo_equal)
+    registerS3method("!=",  "ufo", ufooperators:::ufo_unequal)
+    registerS3method("!",   "ufo", ufooperators:::ufo_not)
+    registerS3method("|",   "ufo", ufooperators:::ufo_or)
+    registerS3method("&",   "ufo", ufooperators:::ufo_and)
+    registerS3method("[",   "ufo", ufooperators:::ufo_subset)
+    #registerS3method("[<-", "ufo", ufooperators:::ufo_subset_assign)	
   }
 
-  if (isTRUE(getOption("ufovectors.overload_operators"))) {
+  if (isTRUE(getOption("ufos.overload_operators"))) {
     write("Overloading operators to return UFO vectors\n", stderr())
-    ufovectors:::overload_operators()
+    ufooperators:::overload_operators()
   }
 }
 

@@ -20,9 +20,6 @@ static const R_CallMethodDef CallEntries[] = {
 	{"strsxp_empty",			(DL_FUNC) &ufo_strsxp_empty,				3},
 	{"vecsxp_empty",			(DL_FUNC) &ufo_vecsxp_empty,				2},
 
-    // Turn on debug mode.
-    {"vectors_set_debug_mode",  (DL_FUNC) &ufo_vectors_set_debug_mode,      1},
-
 	// Artihmetic operators result constructors.
 	{"fit_result", 				(DL_FUNC) &ufo_fit_result,					3},
 	{"div_result",				(DL_FUNC) &ufo_div_result,					3},

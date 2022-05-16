@@ -9,7 +9,6 @@
 #include "../include/ufo_r/src/ufos.h"
 
 #include "helpers.h"
-#include "debug.h"
 
 #include "safety_first.h"
 
@@ -20,11 +19,6 @@ typedef struct {
 
 static int32_t __populate_empty(void* user_data, uintptr_t start, uintptr_t end, unsigned char* target) {
 	data_t data = *((data_t*) user_data);
-
-	if (__get_debug_mode()) {
-	    REprintf("__populate\n");
-	    REprintf("    vector type: %d, data address was %ld\n", data.type, (uintptr_t) user_data);
-	}
 
 	uintptr_t size = end - start;
 	switch (data.type) {
@@ -113,12 +107,6 @@ static int32_t __populate_empty(void* user_data, uintptr_t start, uintptr_t end,
 
 void __destroy_empty(void* user_data) {
     data_t *data = (data_t*) user_data;
-
-    if (__get_debug_mode()) {
-        REprintf("__destroy_empty\n");
-        REprintf("    vector type: %d\n", data->type);
-    }
-
     free(data);
 }
 
