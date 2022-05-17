@@ -1,4 +1,4 @@
-#include "../include/ufo_r/src/ufos.h"
+#include "../include/ufos.h"
 #include "ufo_empty.h"
 #include "ufo_operators.h"
 #include "ufo_coerce.h"
@@ -39,7 +39,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"subscript",				(DL_FUNC) &ufo_subscript,					3},
 
     // Terminates the function list. Necessary.
-    {NULL,							NULL,										0}
+    {NULL,						NULL,										0}
 };
 
 // Initializes the package and registers the routines with the Rdynload
