@@ -137,9 +137,7 @@ void set_string_by_real_index(SEXP vector, R_xlen_t vector_length, R_xlen_t inde
 SEXP ufo_update(SEXP vector, SEXP subscript, SEXP values, SEXP min_load_count_sexp) {
 	//int32_t min_load_count = (int32_t) __extract_int_or_die(min_load_count_sexp);
 	SEXP indices = ufo_subscript(vector, subscript, min_load_count_sexp);
-
-	// FIXME coerce `values` into the same type as `vector` if possible.
-
+    
 	switch (TYPEOF(indices)) {
 	case INTSXP:
 		return write_values_into_vector_at_integer_indices(vector, indices, values);
@@ -154,11 +152,6 @@ SEXP ufo_update(SEXP vector, SEXP subscript, SEXP values, SEXP min_load_count_se
 
 // XXX Can copy by region for contiguous, ordered areas of memory
 SEXP write_values_into_vector_at_integer_indices(SEXP target, SEXP indices_into_target, SEXP source) {
-	// make_sure(TYPEOF(source) == TYPEOF(target), Rf_error, 
-	// 		  "Source and target vector must have the same type to copy "
-	// 		  "values from one into the other.");
-	// XXX Does coercion now
-
 	make_sure(TYPEOF(indices_into_target) == INTSXP, //Rf_error, 
 	 		  "Index vector was expected to be of type INTSXP, but found %i.",
 	 		  type2char(TYPEOF(indices_into_target)));
@@ -245,11 +238,6 @@ SEXP write_values_into_vector_at_integer_indices(SEXP target, SEXP indices_into_
 
 // XXX Can copy by region for contiguous, ordered areas of memory
 SEXP write_values_into_vector_at_real_indices(SEXP target, SEXP indices_into_target, SEXP source) {
-	// make_sure(TYPEOF(source) == TYPEOF(target), Rf_error, 
-	// 		  "Source and target vector must have the same type to copy "
-	// 		  "values from one into the other.");
-	// XXX Does coercion now
-
 	make_sure(TYPEOF(indices_into_target) == INTSXP,
 	 		  "Index vector was expected to be of type INTSXP, but found %i.",
 	 		  type2char(TYPEOF(indices_into_target)));
@@ -263,7 +251,7 @@ SEXP write_values_into_vector_at_real_indices(SEXP target, SEXP indices_into_tar
 			  "the index vector when copying selected values "
 			  "into a vector.");
 
-	make_sure(index_length % source_length == 0, //Rf_error, 
+	make_sure(index_length % source_length == 0,
 			  "The source vector's size must be a multiple of "
 			  "the index vector when copying selected values "
 			  "into a vector.");
