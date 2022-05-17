@@ -12,7 +12,7 @@ typedef SEXP (*ufo_log_result_t)   (SEXP x, SEXP y, SEXP/*INTSXP*/ min_load_coun
 typedef SEXP (*ufo_neg_result_t)   (SEXP x,         SEXP/*INTSXP*/ min_load_count);
 
 typedef SEXP (*ufo_subset_t)	   (SEXP x, SEXP y,         SEXP/*INTSXP*/ min_load_count);
-typedef SEXP (*ufo_subset_assign_t)(SEXP x, SEXP y, SEXP z, SEXP/*INTSXP*/ min_load_count);
+typedef SEXP (*ufo_mutate_t)       (SEXP x, SEXP y, SEXP z, SEXP/*INTSXP*/ min_load_count);
 
 typedef SEXP (*ufo_subscript_t)    (SEXP vector, SEXP subscript, SEXP min_load_count);
 

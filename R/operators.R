@@ -181,6 +181,14 @@ ufo_apply <- function(FUN, ..., MoreArgs = NULL, USE.NAMES = TRUE, chunk_size=10
 }
 
 #-----------------------------------------------------------------------------
+# In place mutation
+#-----------------------------------------------------------------------------
+
+ufo_update <- function(x, subscript, values, min_load_count=0) {
+  .Call(UFO_C_update, x, subscript, values, as.integer(min_load_count))
+}
+
+#-----------------------------------------------------------------------------
 # Helper functions that do the actual chunking
 #-----------------------------------------------------------------------------
 

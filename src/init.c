@@ -2,6 +2,7 @@
 #include "ufo_empty.h"
 #include "ufo_operators.h"
 #include "ufo_coerce.h"
+#include "ufo_mutate.h"
 
 #include "ufo_operators_types.h"
 #include "ufo_coerce_types.h"
@@ -34,7 +35,7 @@ static const R_CallMethodDef CallEntries[] = {
 
 	// Subsetting operators.
 	{"subset",					(DL_FUNC) &ufo_subset,						3},
-	{"subset_assign",			(DL_FUNC) &ufo_subset_assign,				4},
+	{"update",			        (DL_FUNC) &ufo_update,						4},
 
     {"subscript",				(DL_FUNC) &ufo_subscript,					3},
 
@@ -52,7 +53,7 @@ void attribute_visible R_init_ufooperators(DllInfo *dll) {
 	// Export useful functions for use by other packages in C.
 	R_RegisterCCallable("ufos", "get_chunk",          (DL_FUNC) &ufo_get_chunk);
 	R_RegisterCCallable("ufos", "subset",             (DL_FUNC) &ufo_subset);
-	R_RegisterCCallable("ufos", "subset_assign",      (DL_FUNC) &ufo_subset_assign);
+	R_RegisterCCallable("ufos", "update",             (DL_FUNC) &ufo_update);
 	R_RegisterCCallable("ufos", "subscript",          (DL_FUNC) &ufo_subscript);
 	R_RegisterCCallable("ufos", "ufo_fit_result",     (DL_FUNC) &ufo_fit_result);
 	R_RegisterCCallable("ufos", "ufo_div_result",     (DL_FUNC) &ufo_div_result);

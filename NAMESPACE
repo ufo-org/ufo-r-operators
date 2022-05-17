@@ -71,5 +71,4 @@ if (isTRUE(getOption("ufovectors.add_class"))) {
 export(ufo_subscript)
 export(ufo_subset)
 
-# Mutate is buggy. TODO: fix and make available
-#export(ufo_mutate)
+export(ufo_update)
