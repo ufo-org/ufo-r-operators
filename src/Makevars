@@ -12,6 +12,7 @@ endif
 SOURCES_C = init.c  \
             ufo_empty.c \
             ufo_operators.c ufo_coerce.c ufo_mutate.c \
+            bad_char.c \
             rrr.c helpers.c rash.c 
 
 OBJECTS = $(SOURCES_C:.c=.o)
